@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Dinámico: Aves y Plantas en Alemán (Frutos y Hojas)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 580px; margin: 30px auto; text-align: center; background: #f0f4f8; padding: 20px; }
+    .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; margin-bottom: 10px; background: #e2e8f0; color: #334155; }
+    .img-box { position: relative; height: 360px; display: flex; align-items: center; justify-content: center; background: #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+    img { max-width: 100%; max-height: 360px; object-fit: contain; }
+    .photo-counter { font-size: 13px; color: #64748b; margin-bottom: 14px; min-height: 18px; }
+    input { font-size: 17px; padding: 10px 14px; width: 62%; border: 2px solid #cbd5e1; border-radius: 8px; outline: none; }
+    input:focus { border-color: #2563eb; }
+    button { font-size: 15px; padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 4px; font-weight: 600; }
+    button:hover:not(:disabled) { background: #1d4ed8; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .secondary { background: #475569; }
+    .secondary:hover:not(:disabled) { background: #334155; }
+    #feedback { margin-top: 15px; font-size: 17px; min-height: 28px; }
+    .hint-box { font-size: 14px; color: #334155; margin-top: 12px; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb; display: none; text-align: left; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="modeBadge" class="badge">Cargando...</div>
+    <h2 style="margin-top:0;">¿Cómo se llama en alemán?</h2>
+    <div class="img-box">
+      <img id="photo" src="" alt="Cargando foto...">
+    </div>
+    <div id="counter" class="photo-counter"></div>
+    <div>
+      <input type="text" id="answer" placeholder="Escribe el nombre en alemán..." autocomplete="off">
+      <button onclick="checkAnswer()">Comprobar</button>
+    </div>
+    <div id="feedback"></div>
+    <div id="hint" class="hint-box"></div>
+    <div style="margin-top: 15px;">
+      <button id="btnMorePhoto" class="secondary" onclick="showNextPhotoOfSameSpecies()">🔄 Otra foto de esta misma especie</button>
+      <button id="btnNextSpecies" onclick="nextQuestion()">Siguiente especie ➡️</button>
+    </div>
+  </div>
+
+<script>
+const speciesList = [
+  // AVES
+  { de: ["Turmfalke"], sci: "Falco tinnunculus", type: "bird", es: "Cernícalo vulgar", mnemo: "Espalda color ladrillo de torre (Turm) + halcón (Falke)." },
+  { de: ["Waldkauz"], sci: "Strix aluco", type: "bird", es: "Cárabo común", mnemo: "Plumas de tronco de bosque (Wald) + ojos negros en el sofá/caos (Kauz)." },
+  { de: ["Steinadler"], sci: "Aquila chrysaetos", type: "bird", es: "Águila real", mnemo: "Nuca rubia despeinada como Einstein / roca (Stein) + águila (Adler)." },
+  { de: ["Buchfink"], sci: "Fringilla coelebs", type: "bird", es: "Pinzón vulgar", mnemo: "Páginas blancas en el ala como un libro (Buch) + canto 'fink' (Fink)." },
+  { de: ["Rotmilan"], sci: "Milvus milvus", type: "bird", es: "Milano real", mnemo: "Color rojo teja (Rot) + cola en 'M' o 'V' del AC Milan (Milan)." },
+  { de: ["Steinkauz"], sci: "Athene noctua", type: "bird", es: "Mochuelo europeo", mnemo: "Ojos amarillos y cejas blancas de Einstein/piedra (Stein) + rechoncho (Kauz)." },
+  { de: ["Graugans"], sci: "Anser anser", type: "bird", es: "Ánsar común", mnemo: "Plumaje gris ceniza (Grau) + ganso (Gans)." },
+  { de: ["Großer Brachvogel", "Grosser Brachvogel"], sci: "Numenius arquata", type: "bird", es: "Zarapito real", mnemo: "Grande/groso (Großer) + pico largo quebrado hacia abajo 'brach' (Brachvogel)." },
+  { de: ["Star"], sci: "Sturnus vulgaris", type: "bird", es: "Estornino pinto", mnemo: "Plumaje oscuro lleno de puntitos blancos como estrellas y lentejuelas (Star)." },
+  { de: ["Mauersegler"], sci: "Apus apus", type: "bird", es: "Vencejo común", mnemo: "Vive en muros (Mauer) + planea con alas en media luna como un velero (Segler)." },
+  { de: ["Bekassine"], sci: "Gallinago gallinago", type: "bird", es: "Agachadiza común", mnemo: "Pico larguísimo y recto (Beka-) + rayas rubias largas como limusina (-ssine)." },
+  { de: ["Schleiereule"], sci: "Tyto alba", type: "bird", es: "Lechuza común", mnemo: "Cara de corazón blanco como velo de novia (Schleier) + lechuza (Eule)." },
+  { de: ["Mäusebussard"], sci: "Buteo buteo", type: "bird", es: "Busardo ratonero", mnemo: "Babero blanco para comer ratones (Mäuse) + cuerpo ancho como un autobús (Bussard)." },
+  { de: ["Uhu"], sci: "Bubo bubo", type: "bird", es: "Búho real", mnemo: "Dos penachos en forma de 'U' + ojos naranja fuego que asustan: '¡Uhu!'." },
+  { de: ["Saatkrähe"], sci: "Corvus frugilegus", type: "bird", es: "Graja", mnemo: "Base del pico blanca por meterla en el saco de semillas (Saat) + cuervo (Krähe)." },
+  { de: ["Eichelhäher"], sci: "Garrulus glandarius", type: "bird", es: "Arrendajo", mnemo: "Come bellotas (Eichel) con parche azul + bigote que se ríe '¡jé-er!' (Häher)." },
+
+  // PLANTAS (Se filtran para mostrar frutos y hojas)
+  { de: ["Schlehe", "Schwarzdorn"], sci: "Prunus spinosa", type: "plant", es: "Endrino", mnemo: "Ramas con espinas y bayas azules escarchadas de nieve (Schnee -> Schlehe)." },
+  { de: ["Gemeiner Liguster", "Liguster"], sci: "Ligustrum vulgare", type: "plant", es: "Aligustre común", mnemo: "Bayas negras como gemas venenosas (Gemeiner) + hojas ligadas en parejas (Liguster)." },
+  { de: ["Roter Holunder", "Traubenholunder"], sci: "Sambucus racemosa", type: "plant", es: "Saúco rojo", mnemo: "Racimo cónico rojo (Roter) que dice '¡Hola!' debajo de las hojas (Holunder)." },
+  { de: ["Wolliger Schneeball"], sci: "Viburnum lantana", type: "plant", es: "Barbadejo / Lantana", mnemo: "Hojas arrugadas de lana (Wolliger) + bayas rojas y negras a la vez (Schneeball)." },
+  { de: ["Zitterpappel", "Zitter-Pappel", "Espe"], sci: "Populus tremula", type: "plant", onlyLeaves: true, es: "Álamo temblón", mnemo: "Hojas redondas de papel (Pappel) con rabillo largo que tiritan con la brisa (Zitter)." },
+  { de: ["Schwarz-Erle", "Schwarzerle"], sci: "Alnus glutinosa", type: "plant", es: "Aliso común", mnemo: "Piñitas negras (Schwarz) que cuelgan como perlas y hoja con punta mordida (Erle)." },
+  { de: ["Hainbuche", "Weißbuche", "Weissbuche"], sci: "Carpinus betulus", type: "plant", es: "Carpe común", mnemo: "Hoja plegada como libro (Buche) con dientes afilados de tiburón / Hai (Hainbuche)." },
+  { de: ["Gemeine Heckenkirsche", "Rote Heckenkirsche", "Heckenkirsche"], sci: "Lonicera xylosteum", type: "plant", es: "Madreselva pilosa / Cerezo de seto", mnemo: "Bayas rojas venenosas (Gemeine) que salen siempre de 2 en 2 haciendo eco en el seto (Hecken) como cerezas (Kirsche)." }
+];
+
+let currentSpecies = null;
+let photoPool = [];
+let currentPhotoIndex = 0;
+let activeRequestId = 0;
+const taxonCache = {};
+
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function extractValidPhotos(obsResults, sciName) {
+  const urls = [];
+  for (const obs of obsResults) {
+    if (obs.taxon && obs.taxon.name.toLowerCase().startsWith(sciName.toLowerCase()) && obs.photos) {
+      // Tomamos las 2 primeras fotos de cada observación (suelen ser el primer plano de hojas y frutos)
+      for (const p of obs.photos.slice(0, 2)) {
+        if (p.url) {
+          urls.push(p.url.replace("square", "medium"));
+        }
+      }
+    }
+  }
+  return [...new Set(urls)];
+}
+
+async function fetchPhotosForSpecies(speciesObj) {
+  const sciName = speciesObj.sci;
+  if (taxonCache[sciName]) {
+    return shuffleArray(taxonCache[sciName]);
+  }
+
+  // 1. Obtener ID exacto del taxón
+  const taxonRes = await fetch(`https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(sciName)}&rank=species`);
+  const taxonData = await taxonRes.json();
+  const exactTaxon = taxonData.results.find(t => t.name.toLowerCase() === sciName.toLowerCase()) || taxonData.results[0];
+
+  let urls = [];
+
+  if (speciesObj.type === "plant") {
+    if (!speciesObj.onlyLeaves) {
+      // Filtro fenológico de iNaturalist: term_id=12 (Fenología) & term_value_id=14 (Frutos / Semillas)
+      // + meses de verano/otoño (6 a 10) para asegurar que tenga hojas verdes y frutos a la vez (sin flores de primavera)
+      const fruitUrl = `https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&term_id=12&term_value_id=14&month=6,7,8,9,10&per_page=40&order_by=votes`;
+      const fruitRes = await fetch(fruitUrl);
+      const fruitData = await fruitRes.json();
+      urls = extractValidPhotos(fruitData.results, sciName);
+    }
+
+    // Si es un árbol donde interesan sobre todo las hojas (como Zitterpappel) o hay pocas fotos etiquetadas con fruto,
+    // completamos con fotos de pleno verano/principios de otoño (meses 7, 8, 9) sin flores
+    if (urls.length < 15) {
+      const summerLeavesUrl = `https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&month=7,8,9&per_page=40&order_by=votes`;
+      const leavesRes = await fetch(summerLeavesUrl);
+      const leavesData = await leavesRes.json();
+      urls = [...new Set([...urls, ...extractValidPhotos(leavesData.results, sciName)])];
+    }
+  } else {
+    // Para las aves: observaciones verificadas mejor valoradas
+    const birdUrl = `https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&per_page=40&order_by=votes`;
+    const birdRes = await fetch(birdUrl);
+    const birdData = await birdRes.json();
+    urls = extractValidPhotos(birdData.results, sciName);
+  }
+
+  taxonCache[sciName] = urls;
+  return shuffleArray(urls);
+}
+
+async function nextQuestion() {
+  const requestId = ++activeRequestId;
+  document.getElementById("feedback").innerHTML = "";
+  document.getElementById("hint").style.display = "none";
+  document.getElementById("answer").value = "";
+  document.getElementById("photo").src = "";
+  document.getElementById("photo").alt = "Buscando fotos verificadas...";
+  document.getElementById("counter").textContent = "Cargando galería...";
+  document.getElementById("btnMorePhoto").disabled = true;
+
+  let nextSp;
+  do {
+    nextSp = speciesList[Math.floor(Math.random() * speciesList.length)];
+  } while (currentSpecies && nextSp.sci === currentSpecies.sci && speciesList.length > 1);
+  
+  currentSpecies = nextSp;
+  const badge = document.getElementById("modeBadge");
+  if (currentSpecies.type === "plant") {
+    badge.textContent = "🌿 Planta (Filtro activo: solo hojas y frutos)";
+    badge.style.background = "#dcfce7";
+    badge.style.color = "#166534";
+  } else {
+    badge.textContent = "🦅 Ave";
+    badge.style.background = "#dbeafe";
+    badge.style.color = "#1e40af";
+  }
+
+  try {
+    const photos = await fetchPhotosForSpecies(currentSpecies);
+    if (requestId !== activeRequestId) return;
+
+    photoPool = photos;
+    currentPhotoIndex = 0;
+    document.getElementById("btnMorePhoto").disabled = false;
+    displayCurrentPhoto();
+  } catch (e) {
+    if (requestId !== activeRequestId) return;
+    document.getElementById("photo").alt = "Error al cargar la imagen. Comprueba tu conexión a internet.";
+    document.getElementById("counter").textContent = "";
+  }
+}
+
+function displayCurrentPhoto() {
+  if (photoPool.length > 0) {
+    document.getElementById("photo").src = photoPool[currentPhotoIndex];
+    document.getElementById("counter").textContent = `Foto ${currentPhotoIndex + 1} de ${photoPool.length} disponibles de esta misma especie`;
+  }
+}
+
+function showNextPhotoOfSameSpecies() {
+  if (photoPool.length > 1) {
+    currentPhotoIndex = (currentPhotoIndex + 1) % photoPool.length;
+    displayCurrentPhoto();
+  }
+}
+
+function checkAnswer() {
+  if (!currentSpecies) return;
+  const userAns = document.getElementById("answer").value.trim().toLowerCase();
+  const isCorrect = currentSpecies.de.some(ans => ans.toLowerCase() === userAns);
+  const fb = document.getElementById("feedback");
+  const hint = document.getElementById("hint");
+  
+  if (isCorrect) {
+    fb.innerHTML = `<span style="color:#16a34a; font-weight:bold;">✅ ¡Correcto! ${currentSpecies.de[0]} (${currentSpecies.es})</span>`;
+  } else {
+    fb.innerHTML = `<span style="color:#dc2626; font-weight:bold;">❌ Era: ${currentSpecies.de[0]} (${currentSpecies.es})</span>`;
+  }
+  hint.innerHTML = `<strong>💡 Truco visual:</strong> ${currentSpecies.mnemo}`;
+  hint.style.display = "block";
+}
+
+document.getElementById("answer").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") checkAnswer();
+});
+
+nextQuestion();
+</script>
+</body>
+</html>
