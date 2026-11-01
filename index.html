@@ -2,48 +2,81 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Test Dinámico: Aves y Plantas en Alemán (Frutos y Hojas)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Aves y Plantas">
+  <title>Test Aves y Plantas</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 580px; margin: 30px auto; text-align: center; background: #f0f4f8; padding: 20px; }
-    .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-    .badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; margin-bottom: 10px; background: #e2e8f0; color: #334155; }
-    .img-box { position: relative; height: 360px; display: flex; align-items: center; justify-content: center; background: #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
-    img { max-width: 100%; max-height: 360px; object-fit: contain; }
-    .photo-counter { font-size: 13px; color: #64748b; margin-bottom: 14px; min-height: 18px; }
-    input { font-size: 17px; padding: 10px 14px; width: 62%; border: 2px solid #cbd5e1; border-radius: 8px; outline: none; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 12px; background: #f0f4f8; text-align: center; -webkit-tap-highlight-color: transparent; }
+    .card { background: white; padding: 16px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); max-width: 500px; margin: 0 auto; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #475569; }
+    .progress-bar-bg { width: 100%; height: 6px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-bottom: 12px; }
+    .progress-bar-fill { height: 100%; background: #2563eb; width: 0%; transition: width 0.3s ease; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+    h2 { margin: 2px 0 10px 0; font-size: 19px; color: #1e293b; }
+    .img-box { height: 270px; display: flex; align-items: center; justify-content: center; background: #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 6px; }
+    img { max-width: 100%; max-height: 270px; object-fit: contain; }
+    .photo-counter { font-size: 12px; color: #64748b; margin-bottom: 10px; min-height: 16px; }
+    .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    input { flex: 1; font-size: 16px; padding: 12px; border: 2px solid #cbd5e1; border-radius: 10px; outline: none; }
     input:focus { border-color: #2563eb; }
-    button { font-size: 15px; padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 4px; font-weight: 600; }
-    button:hover:not(:disabled) { background: #1d4ed8; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button { font-size: 15px; padding: 12px 14px; background: #2563eb; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    button:disabled { opacity: 0.5; }
+    .nav-row { display: flex; gap: 8px; margin-top: 12px; }
+    .nav-row button { flex: 1; }
     .secondary { background: #475569; }
-    .secondary:hover:not(:disabled) { background: #334155; }
-    #feedback { margin-top: 15px; font-size: 17px; min-height: 28px; }
-    .hint-box { font-size: 14px; color: #334155; margin-top: 12px; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb; display: none; text-align: left; }
+    .warning { background: #d97706; }
+    #feedback { margin-top: 10px; font-size: 16px; min-height: 24px; }
+    .hint-box { font-size: 14px; color: #334155; margin-top: 10px; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #2563eb; display: none; text-align: left; }
+    #summaryScreen { display: none; padding: 20px 10px; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div id="modeBadge" class="badge">Cargando...</div>
-    <h2 style="margin-top:0;">¿Cómo se llama en alemán?</h2>
-    <div class="img-box">
-      <img id="photo" src="" alt="Cargando foto...">
+    <!-- Barra de progreso de la sesión -->
+    <div class="top-bar">
+      <span id="sessionProgress">Especie 1 / 24</span>
+      <span id="scoreDisplay">✅ 0 &nbsp; ❌ 0</span>
     </div>
-    <div id="counter" class="photo-counter"></div>
-    <div>
-      <input type="text" id="answer" placeholder="Escribe el nombre en alemán..." autocomplete="off">
-      <button onclick="checkAnswer()">Comprobar</button>
+    <div class="progress-bar-bg">
+      <div id="progressBar" class="progress-bar-fill"></div>
     </div>
-    <div id="feedback"></div>
-    <div id="hint" class="hint-box"></div>
-    <div style="margin-top: 15px;">
-      <button id="btnMorePhoto" class="secondary" onclick="showNextPhotoOfSameSpecies()">🔄 Otra foto de esta misma especie</button>
-      <button id="btnNextSpecies" onclick="nextQuestion()">Siguiente especie ➡️</button>
+
+    <!-- Pantalla principal del test -->
+    <div id="quizScreen">
+      <div id="modeBadge" class="badge">Cargando...</div>
+      <h2>¿Cómo se llama en alemán?</h2>
+      <div class="img-box">
+        <img id="photo" src="" alt="Cargando foto...">
+      </div>
+      <div id="counter" class="photo-counter"></div>
+      <div class="input-row">
+        <input type="text" id="answer" placeholder="Nombre en alemán..." autocomplete="off" autocorrect="off" autocapitalize="none">
+        <button id="btnCheck" onclick="checkAnswer()">OK</button>
+      </div>
+      <div id="feedback"></div>
+      <div id="hint" class="hint-box"></div>
+      <div class="nav-row">
+        <button id="btnMorePhoto" class="secondary" onclick="showNextPhotoOfSameSpecies()">🔄 Otra foto</button>
+        <button id="btnNextSpecies" onclick="nextQuestion()">Siguiente ➡️</button>
+      </div>
+    </div>
+
+    <!-- Pantalla final de resumen de la sesión -->
+    <div id="summaryScreen">
+      <h2 id="summaryTitle">🎉 ¡Sesión completada!</h2>
+      <p id="summaryStats" style="font-size: 16px; color: #334155; margin: 16px 0;"></p>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+        <button id="btnReviewMistakes" class="warning" onclick="startMistakesSession()" style="display:none;">🔁 Repasar solo las falladas</button>
+        <button onclick="startFullSession()">🔄 Empezar nueva sesión (las 24 especies)</button>
+      </div>
     </div>
   </div>
 
 <script>
 const speciesList = [
-  // AVES
   { de: ["Turmfalke"], sci: "Falco tinnunculus", type: "bird", es: "Cernícalo vulgar", mnemo: "Espalda color ladrillo de torre (Turm) + halcón (Falke)." },
   { de: ["Waldkauz"], sci: "Strix aluco", type: "bird", es: "Cárabo común", mnemo: "Plumas de tronco de bosque (Wald) + ojos negros en el sofá/caos (Kauz)." },
   { de: ["Steinadler"], sci: "Aquila chrysaetos", type: "bird", es: "Águila real", mnemo: "Nuca rubia despeinada como Einstein / roca (Stein) + águila (Adler)." },
@@ -60,8 +93,6 @@ const speciesList = [
   { de: ["Uhu"], sci: "Bubo bubo", type: "bird", es: "Búho real", mnemo: "Dos penachos en forma de 'U' + ojos naranja fuego que asustan: '¡Uhu!'." },
   { de: ["Saatkrähe"], sci: "Corvus frugilegus", type: "bird", es: "Graja", mnemo: "Base del pico blanca por meterla en el saco de semillas (Saat) + cuervo (Krähe)." },
   { de: ["Eichelhäher"], sci: "Garrulus glandarius", type: "bird", es: "Arrendajo", mnemo: "Come bellotas (Eichel) con parche azul + bigote que se ríe '¡jé-er!' (Häher)." },
-
-  // PLANTAS (Se filtran para mostrar frutos y hojas)
   { de: ["Schlehe", "Schwarzdorn"], sci: "Prunus spinosa", type: "plant", es: "Endrino", mnemo: "Ramas con espinas y bayas azules escarchadas de nieve (Schnee -> Schlehe)." },
   { de: ["Gemeiner Liguster", "Liguster"], sci: "Ligustrum vulgare", type: "plant", es: "Aligustre común", mnemo: "Bayas negras como gemas venenosas (Gemeiner) + hojas ligadas en parejas (Liguster)." },
   { de: ["Roter Holunder", "Traubenholunder"], sci: "Sambucus racemosa", type: "plant", es: "Saúco rojo", mnemo: "Racimo cónico rojo (Roter) que dice '¡Hola!' debajo de las hojas (Holunder)." },
@@ -69,10 +100,17 @@ const speciesList = [
   { de: ["Zitterpappel", "Zitter-Pappel", "Espe"], sci: "Populus tremula", type: "plant", onlyLeaves: true, es: "Álamo temblón", mnemo: "Hojas redondas de papel (Pappel) con rabillo largo que tiritan con la brisa (Zitter)." },
   { de: ["Schwarz-Erle", "Schwarzerle"], sci: "Alnus glutinosa", type: "plant", es: "Aliso común", mnemo: "Piñitas negras (Schwarz) que cuelgan como perlas y hoja con punta mordida (Erle)." },
   { de: ["Hainbuche", "Weißbuche", "Weissbuche"], sci: "Carpinus betulus", type: "plant", es: "Carpe común", mnemo: "Hoja plegada como libro (Buche) con dientes afilados de tiburón / Hai (Hainbuche)." },
-  { de: ["Gemeine Heckenkirsche", "Rote Heckenkirsche", "Heckenkirsche"], sci: "Lonicera xylosteum", type: "plant", es: "Madreselva pilosa / Cerezo de seto", mnemo: "Bayas rojas venenosas (Gemeine) que salen siempre de 2 en 2 haciendo eco en el seto (Hecken) como cerezas (Kirsche)." }
+  { de: ["Gemeine Heckenkirsche", "Rote Heckenkirsche", "Heckenkirsche"], sci: "Lonicera xylosteum", type: "plant", es: "Madreselva pilosa / Cerezo de seto", mnemo: "Bayas rojas venenosas (Gemeine) de 2 en 2 haciendo eco en el seto (Hecken) como cerezas (Kirsche)." }
 ];
 
+let sessionDeck = [];
+let mistakesDeck = [];
+let deckIndex = -1;
 let currentSpecies = null;
+let currentQuestionAnswered = false;
+let correctCount = 0;
+let wrongCount = 0;
+
 let photoPool = [];
 let currentPhotoIndex = 0;
 let activeRequestId = 0;
@@ -87,15 +125,43 @@ function shuffleArray(arr) {
   return copy;
 }
 
+function startFullSession() {
+  sessionDeck = shuffleArray(speciesList);
+  mistakesDeck = [];
+  deckIndex = -1;
+  correctCount = 0;
+  wrongCount = 0;
+  document.getElementById("summaryScreen").style.display = "none";
+  document.getElementById("quizScreen").style.display = "block";
+  nextQuestion();
+}
+
+function startMistakesSession() {
+  sessionDeck = shuffleArray(mistakesDeck);
+  mistakesDeck = [];
+  deckIndex = -1;
+  correctCount = 0;
+  wrongCount = 0;
+  document.getElementById("summaryScreen").style.display = "none";
+  document.getElementById("quizScreen").style.display = "block";
+  nextQuestion();
+}
+
+function updateTopBar() {
+  const total = sessionDeck.length;
+  const currentNum = Math.min(deckIndex + 1, total);
+  document.getElementById("sessionProgress").textContent = `Especie ${currentNum} / ${total}`;
+  document.getElementById("scoreDisplay").innerHTML = `✅ ${correctCount} &nbsp; ❌ ${wrongCount}`;
+  const pct = total > 0 ? (currentNum / total) * 100 : 0;
+  document.getElementById("progressBar").style.width = `${pct}%`;
+}
+
 function extractValidPhotos(obsResults, sciName) {
   const urls = [];
   for (const obs of obsResults) {
     if (obs.taxon && obs.taxon.name.toLowerCase().startsWith(sciName.toLowerCase()) && obs.photos) {
-      // Tomamos las 2 primeras fotos de cada observación (suelen ser el primer plano de hojas y frutos)
       for (const p of obs.photos.slice(0, 2)) {
-        if (p.url) {
-          urls.push(p.url.replace("square", "medium"));
-        }
+        if (p.url) urls.push(p.url.replace("square", "medium"));
       }
     }
   }
@@ -104,93 +170,106 @@ function extractValidPhotos(obsResults, sciName) {
 
 async function fetchPhotosForSpecies(speciesObj) {
   const sciName = speciesObj.sci;
-  if (taxonCache[sciName]) {
-    return shuffleArray(taxonCache[sciName]);
-  }
+  if (taxonCache[sciName]) return shuffleArray(taxonCache[sciName]);
 
-  // 1. Obtener ID exacto del taxón
   const taxonRes = await fetch(`https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(sciName)}&rank=species`);
   const taxonData = await taxonRes.json();
   const exactTaxon = taxonData.results.find(t => t.name.toLowerCase() === sciName.toLowerCase()) || taxonData.results[0];
 
   let urls = [];
-
   if (speciesObj.type === "plant") {
     if (!speciesObj.onlyLeaves) {
-      // Filtro fenológico de iNaturalist: term_id=12 (Fenología) & term_value_id=14 (Frutos / Semillas)
-      // + meses de verano/otoño (6 a 10) para asegurar que tenga hojas verdes y frutos a la vez (sin flores de primavera)
-      const fruitUrl = `https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&term_id=12&term_value_id=14&month=6,7,8,9,10&per_page=40&order_by=votes`;
-      const fruitRes = await fetch(fruitUrl);
+      const fruitRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&term_id=12&term_value_id=14&month=6,7,8,9,10&per_page=40&order_by=votes`);
       const fruitData = await fruitRes.json();
       urls = extractValidPhotos(fruitData.results, sciName);
     }
-
-    // Si es un árbol donde interesan sobre todo las hojas (como Zitterpappel) o hay pocas fotos etiquetadas con fruto,
-    // completamos con fotos de pleno verano/principios de otoño (meses 7, 8, 9) sin flores
     if (urls.length < 15) {
-      const summerLeavesUrl = `https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&month=7,8,9&per_page=40&order_by=votes`;
-      const leavesRes = await fetch(summerLeavesUrl);
+      const leavesRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&month=7,8,9&per_page=40&order_by=votes`);
       const leavesData = await leavesRes.json();
       urls = [...new Set([...urls, ...extractValidPhotos(leavesData.results, sciName)])];
     }
   } else {
-    // Para las aves: observaciones verificadas mejor valoradas
-    const birdUrl = `https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&per_page=40&order_by=votes`;
-    const birdRes = await fetch(birdUrl);
+    const birdRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&per_page=40&order_by=votes`);
     const birdData = await birdRes.json();
     urls = extractValidPhotos(birdData.results, sciName);
   }
-
   taxonCache[sciName] = urls;
   return shuffleArray(urls);
 }
 
 async function nextQuestion() {
+  // Si el usuario salta de especie sin haber respondido, la guardamos para repasar al final
+  if (deckIndex >= 0 && !currentQuestionAnswered && currentSpecies) {
+    wrongCount++;
+    if (!mistakesDeck.some(s => s.sci === currentSpecies.sci)) {
+      mistakesDeck.push(currentSpecies);
+    }
+  }
+
+  deckIndex++;
+
+  // Si ya terminamos todas las cartas de la baraja, mostramos el resumen final
+  if (deckIndex >= sessionDeck.length) {
+    showSessionSummary();
+    return;
+  }
+
+  currentSpecies = sessionDeck[deckIndex];
+  currentQuestionAnswered = false;
+  updateTopBar();
+
   const requestId = ++activeRequestId;
   document.getElementById("feedback").innerHTML = "";
   document.getElementById("hint").style.display = "none";
   document.getElementById("answer").value = "";
   document.getElementById("photo").src = "";
-  document.getElementById("photo").alt = "Buscando fotos verificadas...";
   document.getElementById("counter").textContent = "Cargando galería...";
   document.getElementById("btnMorePhoto").disabled = true;
 
-  let nextSp;
-  do {
-    nextSp = speciesList[Math.floor(Math.random() * speciesList.length)];
-  } while (currentSpecies && nextSp.sci === currentSpecies.sci && speciesList.length > 1);
-  
-  currentSpecies = nextSp;
   const badge = document.getElementById("modeBadge");
   if (currentSpecies.type === "plant") {
-    badge.textContent = "🌿 Planta (Filtro activo: solo hojas y frutos)";
-    badge.style.background = "#dcfce7";
-    badge.style.color = "#166534";
+    badge.textContent = "🌿 Planta (Hojas y frutos)";
+    badge.style.background = "#dcfce7"; badge.style.color = "#166534";
   } else {
     badge.textContent = "🦅 Ave";
-    badge.style.background = "#dbeafe";
-    badge.style.color = "#1e40af";
+    badge.style.background = "#dbeafe"; badge.style.color = "#1e40af";
   }
 
   try {
     const photos = await fetchPhotosForSpecies(currentSpecies);
     if (requestId !== activeRequestId) return;
-
-    photoPool = photos;
-    currentPhotoIndex = 0;
+    photoPool = photos; currentPhotoIndex = 0;
     document.getElementById("btnMorePhoto").disabled = false;
     displayCurrentPhoto();
   } catch (e) {
     if (requestId !== activeRequestId) return;
-    document.getElementById("photo").alt = "Error al cargar la imagen. Comprueba tu conexión a internet.";
-    document.getElementById("counter").textContent = "";
+    document.getElementById("counter").textContent = "Error de conexión.";
+  }
+}
+
+function showSessionSummary() {
+  document.getElementById("quizScreen").style.display = "none";
+  document.getElementById("summaryScreen").style.display = "block";
+  const total = sessionDeck.length;
+  document.getElementById("summaryStats").innerHTML = 
+    `Has acertado <strong>${correctCount}</strong> de <strong>${total}</strong> especies.<br>` +
+    (mistakesDeck.length > 0 
+      ? `Tienes <strong>${mistakesDeck.length}</strong> especie(s) pendiente(s) de dominar.` 
+      : `¡Enhorabuena! Has dominado todas las especies de esta ronda sin un solo fallo.`);
+
+  const btnMistakes = document.getElementById("btnReviewMistakes");
+  if (mistakesDeck.length > 0) {
+    btnMistakes.style.display = "block";
+    btnMistakes.textContent = `🔁 Repasar las ${mistakesDeck.length} falladas / saltadas`;
+  } else {
+    btnMistakes.style.display = "none";
   }
 }
 
 function displayCurrentPhoto() {
   if (photoPool.length > 0) {
     document.getElementById("photo").src = photoPool[currentPhotoIndex];
-    document.getElementById("counter").textContent = `Foto ${currentPhotoIndex + 1} de ${photoPool.length} disponibles de esta misma especie`;
+    document.getElementById("counter").textContent = `Foto ${currentPhotoIndex + 1} de ${photoPool.length} de esta especie`;
   }
 }
 
@@ -207,21 +286,33 @@ function checkAnswer() {
   const isCorrect = currentSpecies.de.some(ans => ans.toLowerCase() === userAns);
   const fb = document.getElementById("feedback");
   const hint = document.getElementById("hint");
-  
-  if (isCorrect) {
-    fb.innerHTML = `<span style="color:#16a34a; font-weight:bold;">✅ ¡Correcto! ${currentSpecies.de[0]} (${currentSpecies.es})</span>`;
-  } else {
-    fb.innerHTML = `<span style="color:#dc2626; font-weight:bold;">❌ Era: ${currentSpecies.de[0]} (${currentSpecies.es})</span>`;
+
+  // Solo contabilizamos la puntuación en el primer intento de cada carta
+  if (!currentQuestionAnswered) {
+    currentQuestionAnswered = true;
+    if (isCorrect) {
+      correctCount++;
+    } else {
+      wrongCount++;
+      if (!mistakesDeck.some(s => s.sci === currentSpecies.sci)) {
+        mistakesDeck.push(currentSpecies);
+      }
+    }
+    updateTopBar();
   }
+
+  fb.innerHTML = isCorrect 
+    ? `<span style="color:#16a34a; font-weight:bold;">✅ ¡Correcto! ${currentSpecies.de[0]} (${currentSpecies.es})</span>`
+    : `<span style="color:#dc2626; font-weight:bold;">❌ Era: ${currentSpecies.de[0]} (${currentSpecies.es})</span>`;
   hint.innerHTML = `<strong>💡 Truco visual:</strong> ${currentSpecies.mnemo}`;
   hint.style.display = "block";
 }
 
 document.getElementById("answer").addEventListener("keypress", function(e) {
-  if (e.key === "Enter") checkAnswer();
+  if (e.key === "Enter") { checkAnswer(); this.blur(); }
 });
 
-nextQuestion();
+startFullSession();
 </script>
 </body>
 </html>
