@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Aves y Plantas">
-  <title>Test Aves y Plantas</title>
+  <title>Test Aves y Plantas (30 especies)</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 12px; background: #f0f4f8; text-align: center; -webkit-tap-highlight-color: transparent; }
@@ -37,7 +37,7 @@
   <div class="card">
     <!-- Barra de progreso de la sesión -->
     <div class="top-bar">
-      <span id="sessionProgress">Especie 1 / 24</span>
+      <span id="sessionProgress">Especie 1 / 30</span>
       <span id="scoreDisplay">✅ 0 &nbsp; ❌ 0</span>
     </div>
     <div class="progress-bar-bg">
@@ -70,13 +70,14 @@
       <p id="summaryStats" style="font-size: 16px; color: #334155; margin: 16px 0;"></p>
       <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
         <button id="btnReviewMistakes" class="warning" onclick="startMistakesSession()" style="display:none;">🔁 Repasar solo las falladas</button>
-        <button onclick="startFullSession()">🔄 Empezar nueva sesión (las 24 especies)</button>
+        <button onclick="startFullSession()">🔄 Empezar nueva sesión (las 30 especies)</button>
       </div>
     </div>
   </div>
 
 <script>
 const speciesList = [
+  // AVES (20)
   { de: ["Turmfalke"], sci: "Falco tinnunculus", type: "bird", es: "Cernícalo vulgar", mnemo: "Espalda color ladrillo de torre (Turm) + halcón (Falke)." },
   { de: ["Waldkauz"], sci: "Strix aluco", type: "bird", es: "Cárabo común", mnemo: "Plumas de tronco de bosque (Wald) + ojos negros en el sofá/caos (Kauz)." },
   { de: ["Steinadler"], sci: "Aquila chrysaetos", type: "bird", es: "Águila real", mnemo: "Nuca rubia despeinada como Einstein / roca (Stein) + águila (Adler)." },
@@ -93,6 +94,12 @@ const speciesList = [
   { de: ["Uhu"], sci: "Bubo bubo", type: "bird", es: "Búho real", mnemo: "Dos penachos en forma de 'U' + ojos naranja fuego que asustan: '¡Uhu!'." },
   { de: ["Saatkrähe"], sci: "Corvus frugilegus", type: "bird", es: "Graja", mnemo: "Base del pico blanca por meterla en el saco de semillas (Saat) + cuervo (Krähe)." },
   { de: ["Eichelhäher"], sci: "Garrulus glandarius", type: "bird", es: "Arrendajo", mnemo: "Come bellotas (Eichel) con parche azul + bigote que se ríe '¡jé-er!' (Häher)." },
+  { de: ["Feldlerche"], sci: "Alauda arvensis", type: "bird", es: "Alondra común", mnemo: "Pajarito con tupé en la tierra del campo (Feld) y pecho claro manchado como de leche (Lerche)." },
+  { de: ["Gebirgsstelze"], sci: "Motacilla cinerea", type: "bird", es: "Lavandera cascadeña", mnemo: "Barriga amarilla y espalda gris sobre rocas de río de montaña (Gebirgs-) + cola larga y patas muy esbeltas como zancos (Stelze)." },
+  { de: ["Bachstelze"], sci: "Motacilla alba", type: "bird", es: "Lavandera blanca", mnemo: "Traje blanco y negro con babero como el músico J. S. Bach junto al arroyo (Bach) + patas esbeltas como zancos (Stelze)." },
+  { de: ["Hausrotschwanz"], sci: "Phoenicurus ochruros", type: "bird", es: "Colirrojo tizón", mnemo: "Gris oscuro como hollín de chimenea de casa (Haus) + cola (Schwanz) de color rojo teja (rot)." },
+
+  // PLANTAS (10)
   { de: ["Schlehe", "Schwarzdorn"], sci: "Prunus spinosa", type: "plant", es: "Endrino", mnemo: "Ramas con espinas y bayas azules escarchadas de nieve (Schnee -> Schlehe)." },
   { de: ["Gemeiner Liguster", "Liguster"], sci: "Ligustrum vulgare", type: "plant", es: "Aligustre común", mnemo: "Bayas negras como gemas venenosas (Gemeiner) + hojas ligadas en parejas (Liguster)." },
   { de: ["Roter Holunder", "Traubenholunder"], sci: "Sambucus racemosa", type: "plant", es: "Saúco rojo", mnemo: "Racimo cónico rojo (Roter) que dice '¡Hola!' debajo de las hojas (Holunder)." },
@@ -100,7 +107,9 @@ const speciesList = [
   { de: ["Zitterpappel", "Zitter-Pappel", "Espe"], sci: "Populus tremula", type: "plant", onlyLeaves: true, es: "Álamo temblón", mnemo: "Hojas redondas de papel (Pappel) con rabillo largo que tiritan con la brisa (Zitter)." },
   { de: ["Schwarz-Erle", "Schwarzerle"], sci: "Alnus glutinosa", type: "plant", es: "Aliso común", mnemo: "Piñitas negras (Schwarz) que cuelgan como perlas y hoja con punta mordida (Erle)." },
   { de: ["Hainbuche", "Weißbuche", "Weissbuche"], sci: "Carpinus betulus", type: "plant", es: "Carpe común", mnemo: "Hoja plegada como libro (Buche) con dientes afilados de tiburón / Hai (Hainbuche)." },
-  { de: ["Gemeine Heckenkirsche", "Rote Heckenkirsche", "Heckenkirsche"], sci: "Lonicera xylosteum", type: "plant", es: "Madreselva pilosa / Cerezo de seto", mnemo: "Bayas rojas venenosas (Gemeine) de 2 en 2 haciendo eco en el seto (Hecken) como cerezas (Kirsche)." }
+  { de: ["Gemeine Heckenkirsche", "Rote Heckenkirsche", "Heckenkirsche"], sci: "Lonicera xylosteum", type: "plant", es: "Madreselva pilosa / Cerezo de seto", mnemo: "Bayas rojas venenosas (Gemeine) de 2 en 2 haciendo eco en el seto (Hecken) como cerezas (Kirsche)." },
+  { de: ["Roter Hartriegel", "Blutroter Hartriegel", "Hartriegel"], sci: "Cornus sanguinea", type: "plant", es: "Cornejo común / Sanguino", mnemo: "Ramas y hojas con tonos rojo sangre (Roter) + ramillete plano de bayas negras y hojas con nervios curvos como rieles duros (Hartriegel)." },
+  { de: ["Mistel", "Weißbeerige Mistel", "Weissbeerige Mistel"], sci: "Viscum album", type: "plant", winterFruit: true, es: "Muérdago blanco", mnemo: "Bayas blancas como perlas y hojas en 'V' que crecen en las ramas de forma mística / por excrementos de ave (Mist -> Mistel)." }
 ];
 
 let sessionDeck = [];
@@ -179,12 +188,14 @@ async function fetchPhotosForSpecies(speciesObj) {
   let urls = [];
   if (speciesObj.type === "plant") {
     if (!speciesObj.onlyLeaves) {
-      const fruitRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&term_id=12&term_value_id=14&month=6,7,8,9,10&per_page=40&order_by=votes`);
+      const months = speciesObj.winterFruit ? "1,2,3,9,10,11,12" : "6,7,8,9,10";
+      const fruitRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&term_id=12&term_value_id=14&month=${months}&per_page=40&order_by=votes`);
       const fruitData = await fruitRes.json();
       urls = extractValidPhotos(fruitData.results, sciName);
     }
     if (urls.length < 15) {
-      const leavesRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&month=7,8,9&per_page=40&order_by=votes`);
+      const fallbackMonths = speciesObj.winterFruit ? "11,12,1,2" : "7,8,9";
+      const leavesRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&month=${fallbackMonths}&per_page=40&order_by=votes`);
       const leavesData = await leavesRes.json();
       urls = [...new Set([...urls, ...extractValidPhotos(leavesData.results, sciName)])];
     }
@@ -198,7 +209,6 @@ async function fetchPhotosForSpecies(speciesObj) {
 }
 
 async function nextQuestion() {
-  // Si el usuario salta de especie sin haber respondido, la guardamos para repasar al final
   if (deckIndex >= 0 && !currentQuestionAnswered && currentSpecies) {
     wrongCount++;
     if (!mistakesDeck.some(s => s.sci === currentSpecies.sci)) {
@@ -208,7 +218,6 @@ async function nextQuestion() {
 
   deckIndex++;
 
-  // Si ya terminamos todas las cartas de la baraja, mostramos el resumen final
   if (deckIndex >= sessionDeck.length) {
     showSessionSummary();
     return;
@@ -287,7 +296,6 @@ function checkAnswer() {
   const fb = document.getElementById("feedback");
   const hint = document.getElementById("hint");
 
-  // Solo contabilizamos la puntuación en el primer intento de cada carta
   if (!currentQuestionAnswered) {
     currentQuestionAnswered = true;
     if (isCorrect) {
