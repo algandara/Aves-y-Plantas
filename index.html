@@ -17,33 +17,47 @@
     <div id="screenMenu">
       <div class="menu-header">
         <h1>Aves y Plantas 🦅🌿</h1>
-        <p>Entrenamiento de identificación en alemán</p>
+        <p>¿Qué quieres hacer hoy?</p>
       </div>
 
       <div class="menu-options">
-        <!-- Tarjeta Modo Examen -->
-        <div class="mode-card quiz" onclick="goToMode('quiz')">
-          <div class="icon-circle">🎯</div>
-          <div class="mode-info">
-            <h3>Modo Examen</h3>
-            <p>Mira la foto y escribe el nombre en alemán. Las fotos cambian en cada pregunta.</p>
+        
+        <!-- TARJETA 1: MODO TEST (AZUL VIBRANTE) -->
+        <div class="mode-card card-quiz" onclick="goToMode('quiz')">
+          <div class="card-top-tag">EVALUACIÓN ACTIVA</div>
+          <div class="card-main-content">
+            <div class="card-huge-icon">🎯</div>
+            <div class="card-headings">
+              <h2>Modo Examen</h2>
+              <p>Te muestra una foto aleatoria y debes escribir el nombre en alemán.</p>
+            </div>
           </div>
-          <div class="mode-arrow">→</div>
+          <div class="card-action-bar">
+            <span>Empezar Test</span>
+            <span class="action-arrow">➔</span>
+          </div>
         </div>
 
-        <!-- Tarjeta Repaso Comparativo -->
-        <div class="mode-card study" onclick="goToMode('study')">
-          <div class="icon-circle">📚</div>
-          <div class="mode-info">
-            <h3>Repaso Comparativo</h3>
-            <p>Tablas con especies parecidas agrupadas, rasgos clave y fotos fijas ampliables.</p>
+        <!-- TARJETA 2: MODO ESTUDIO (VERDE ESMERALDA) -->
+        <div class="mode-card card-study" onclick="goToMode('study')">
+          <div class="card-top-tag">CONSULTA Y MEMORIZACIÓN</div>
+          <div class="card-main-content">
+            <div class="card-huge-icon">📚</div>
+            <div class="card-headings">
+              <h2>Modo Repaso</h2>
+              <p>Tablas comparativas de especies parecidas, fotos fijas ampliables y claves.</p>
+            </div>
           </div>
-          <div class="mode-arrow">→</div>
+          <div class="card-action-bar">
+            <span>Ver Tablas de Repaso</span>
+            <span class="action-arrow">➔</span>
+          </div>
         </div>
+
       </div>
       
       <div class="menu-badge-footer">
-        36 especies en total (24 aves y 12 plantas)
+        36 especies disponibles (24 aves y 12 plantas)[cite: 1]
       </div>
     </div>
 
