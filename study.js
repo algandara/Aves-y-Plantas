@@ -30,7 +30,7 @@ function renderStudySection() {
             <div class="species-de">${sp.de[0]}</div>
             <div class="species-es">${sp.es}</div>
             <div style="font-size:11px; color:#0284c7; font-weight:600; margin-top:3px; line-height:1.25;">
-              🔍 Lit.: <em>${sp.literal}</em>
+              <em>${sp.literal}</em>
             </div>
           </td>
           <td>
