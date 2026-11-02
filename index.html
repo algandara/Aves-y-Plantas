@@ -13,109 +13,111 @@
 <body>
   <div class="card">
     
-    <!-- 1. PANTALLA: MENÚ PRINCIPAL -->
+    <!-- PANTALLA 1: MENÚ PRINCIPAL -->
     <div id="screenMenu">
-      <div class="menu-hero">
-        <h1 class="menu-title">🌿 Aves y Plantas 🦅</h1>
-        <p class="menu-subtitle">Elige un modo para comenzar a practicar</p>
+      <div class="menu-header">
+        <h1>Aves y Plantas 🦅🌿</h1>
+        <p>Entrenamiento de identificación en alemán</p>
       </div>
 
-      <div class="menu-cards">
-        <!-- Tarjeta Test -->
-        <div class="menu-card" onclick="goToMode('quiz')">
-          <div class="card-icon">🎯</div>
-          <div class="card-text">
+      <div class="menu-options">
+        <!-- Tarjeta Modo Examen -->
+        <div class="mode-card quiz" onclick="goToMode('quiz')">
+          <div class="icon-circle">🎯</div>
+          <div class="mode-info">
             <h3>Modo Examen</h3>
-            <p>Identifica la especie viendo fotos de la naturaleza y escribe su nombre en alemán.</p>
+            <p>Mira la foto y escribe el nombre en alemán. Las fotos cambian en cada pregunta.</p>
           </div>
-          <div class="card-arrow">➡️</div>
+          <div class="mode-arrow">→</div>
         </div>
 
-        <!-- Tarjeta Repaso -->
-        <div class="menu-card" onclick="goToMode('study')">
-          <div class="card-icon">📚</div>
-          <div class="card-text">
+        <!-- Tarjeta Repaso Comparativo -->
+        <div class="mode-card study" onclick="goToMode('study')">
+          <div class="icon-circle">📚</div>
+          <div class="mode-info">
             <h3>Repaso Comparativo</h3>
-            <p>Compara especies parecidas en tablas organizadas con rasgos clave y fotos en detalle.</p>
+            <p>Tablas con especies parecidas agrupadas, rasgos clave y fotos fijas ampliables.</p>
           </div>
-          <div class="card-arrow">➡️</div>
+          <div class="mode-arrow">→</div>
         </div>
       </div>
       
-      <div class="menu-footer">
-        36 especies disponibles (24 aves y 12 plantas)
+      <div class="menu-badge-footer">
+        36 especies en total (24 aves y 12 plantas)
       </div>
     </div>
 
-    <!-- 2. PANTALLA: TEST INTERACTIVO -->
+    <!-- PANTALLA 2: MODO TEST -->
     <div id="screenQuiz" style="display: none;">
-      <div class="top-header-row">
-        <button class="back-home-btn" onclick="goToMode('menu')">🏠 Menú</button>
-        <span id="sessionProgress">Especie 1 / 36</span>
-        <span id="scoreDisplay">✅ 0 &nbsp; ❌ 0</span>
+      <div class="nav-header">
+        <button class="btn-back" onclick="goToMode('menu')">← Menú</button>
+        <span id="sessionProgress" class="session-stat">Especie 1 / 36</span>
+        <span id="scoreDisplay" class="session-stat">✅ 0 &nbsp; ❌ 0</span>
       </div>
+
       <div class="progress-bar-bg">
         <div id="progressBar" class="progress-bar-fill"></div>
       </div>
 
       <div id="quizScreen">
-        <div style="text-align: center;"><div id="modeBadge" class="badge">Cargando...</div></div>
-        <h2>¿Cómo se llama en alemán?</h2>
+        <div style="text-align: center;"><div id="modeBadge" class="type-pill">Cargando...</div></div>
+        
         <div class="img-box">
           <img id="photo" class="quiz-img" src="" alt="Cargando foto...">
         </div>
         <div id="counter" class="photo-counter"></div>
-        <div class="input-row">
-          <input type="text" id="answer" placeholder="Nombre en alemán..." autocomplete="off" autocorrect="off" autocapitalize="none">
-          <button id="btnCheck" class="action-btn" onclick="checkAnswer()">OK</button>
+
+        <div class="input-container">
+          <input type="text" id="answer" class="input-text" placeholder="Escribe el nombre en alemán..." autocomplete="off" autocorrect="off" autocapitalize="none">
+          <button id="btnCheck" class="btn-primary" onclick="checkAnswer()">OK</button>
         </div>
+
         <div id="feedback"></div>
         <div id="hint" class="hint-box"></div>
-        <div class="nav-row">
-          <button id="btnMorePhoto" class="action-btn secondary" onclick="showNextPhotoOfSameSpecies()">🔄 Otra foto</button>
-          <button id="btnNextSpecies" class="action-btn" onclick="nextQuestion()">Siguiente ➡️</button>
+
+        <div class="btn-action-row">
+          <button id="btnMorePhoto" class="btn-secondary" onclick="showNextPhotoOfSameSpecies()">🔄 Otra foto</button>
+          <button id="btnNextSpecies" class="btn-primary" onclick="nextQuestion()">Siguiente →</button>
         </div>
       </div>
 
-      <div id="summaryScreen">
-        <h2 id="summaryTitle">🎉 ¡Sesión completada!</h2>
-        <p id="summaryStats" style="font-size: 16px; color: #334155; margin: 16px 0;"></p>
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-          <button id="btnReviewMistakes" class="action-btn warning" onclick="startMistakesSession()" style="display:none;">🔁 Repasar solo las falladas</button>
-          <button class="action-btn" onclick="startFullSession()">🔄 Empezar nueva sesión (las 36 especies)</button>
-          <button class="action-btn secondary" onclick="goToMode('menu')">🏠 Volver al Menú Principal</button>
+      <div id="summaryScreen" style="display: none; text-align: center; padding: 20px 0;">
+        <h2 id="summaryTitle" style="font-size: 22px; margin-bottom: 8px;">🎉 ¡Sesión completada!</h2>
+        <p id="summaryStats" style="font-size: 15px; color: #475569; margin: 16px 0; line-height: 1.5;"></p>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 24px;">
+          <button id="btnReviewMistakes" class="btn-primary" style="background: #d97706;" onclick="startMistakesSession()">🔁 Repasar solo falladas</button>
+          <button class="btn-primary" onclick="startFullSession()">🔄 Nueva ronda (las 36)</button>
+          <button class="btn-secondary" onclick="goToMode('menu')">← Volver al Menú</button>
         </div>
       </div>
     </div>
 
-    <!-- 3. PANTALLA: REPASO COMPARATIVO -->
+    <!-- PANTALLA 3: MODO ESTUDIO -->
     <div id="screenStudy" style="display: none;">
-      <div class="top-header-row" style="margin-bottom: 14px;">
-        <button class="back-home-btn" onclick="goToMode('menu')">🏠 Menú</button>
-        <strong style="color:#1e293b; font-size:15px;">📚 Repaso Comparativo</strong>
-        <span style="width: 50px;"></span>
+      <div class="nav-header">
+        <button class="btn-back" onclick="goToMode('menu')">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">📚 Repaso Comparativo</strong>
+        <span style="width: 60px;"></span>
       </div>
-      <p style="font-size: 13px; color: #64748b; margin-top: 0; line-height: 1.4;">
-        Toca cualquier foto fija para <strong>ampliarla a pantalla completa</strong> y estudiar el rasgo morfológico clave.
+      <p style="font-size: 13px; color: #64748b; margin: 4px 0 16px 0; line-height: 1.4;">
+        Toca cualquier foto para <strong>ampliarla a pantalla completa</strong> y estudiar el rasgo morfológico clave.
       </p>
       <div id="studyContent"></div>
     </div>
 
   </div>
 
-  <!-- Visor Modal a Pantalla Completa (Lightbox) -->
+  <!-- Modal Lightbox -->
   <div id="imageModal" class="modal" onclick="closeModal()">
     <div class="modal-close" onclick="closeModal()">&times;</div>
     <img id="modalImg" class="modal-content" src="" alt="Zoom">
     <div id="modalCaption" class="modal-caption"></div>
   </div>
 
-  <!-- Archivos de datos y lógica -->
   <script src="data.js"></script>
   <script src="test.js"></script>
   <script src="study.js"></script>
   <script>
-    // Enrutador del Menú Principal
     function goToMode(mode) {
       document.getElementById("screenMenu").style.display = "none";
       document.getElementById("screenQuiz").style.display = "none";
@@ -123,7 +125,6 @@
 
       if (mode === "quiz") {
         document.getElementById("screenQuiz").style.display = "block";
-        // Si no se había iniciado sesión o venimos desde cero, arrancamos
         if (sessionDeck.length === 0 || deckIndex === -1) {
           startFullSession();
         }
@@ -131,7 +132,6 @@
         document.getElementById("screenStudy").style.display = "block";
         renderStudySection();
       } else {
-        // Volver al Menú
         document.getElementById("screenMenu").style.display = "block";
       }
     }
