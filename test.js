@@ -121,13 +121,16 @@ async function nextQuestion() {
   document.getElementById("counter").textContent = "Cargando galería...";
   document.getElementById("btnMorePhoto").disabled = true;
 
+  // Solo indica si es Planta o Ave (sin desvelar la categoría ni el subgrupo)
   const badge = document.getElementById("modeBadge");
   if (currentSpecies.type === "plant") {
-    badge.textContent = `🌿 ${currentSpecies.group}`;
-    badge.style.background = "#dcfce7"; badge.style.color = "#166534";
+    badge.textContent = "🌿 Planta";
+    badge.style.background = "#dcfce7"; 
+    badge.style.color = "#166534";
   } else {
-    badge.textContent = `🦅 ${currentSpecies.group}`;
-    badge.style.background = "#dbeafe"; badge.style.color = "#1e40af";
+    badge.textContent = "🦅 Ave";
+    badge.style.background = "#dbeafe"; 
+    badge.style.color = "#1e40af";
   }
 
   try {
@@ -198,7 +201,7 @@ function checkAnswer() {
   fb.innerHTML = isCorrect 
     ? `<span style="color:#16a34a; font-weight:bold;">✅ ¡Correcto! ${currentSpecies.de[0]} (${currentSpecies.es})</span>`
     : `<span style="color:#dc2626; font-weight:bold;">❌ Era: ${currentSpecies.de[0]} (${currentSpecies.es})</span>`;
-  hint.innerHTML = `<strong>💡 Clave:</strong> ${currentSpecies.trait}<br><span style="font-size:12px; color:#64748b;">(Truco: ${currentSpecies.mnemo})</span>`;
+  hint.innerHTML = `<strong>💡 Grupo:</strong> ${currentSpecies.group}<br><strong>💡 Clave:</strong> ${currentSpecies.trait}<br><span style="font-size:12px; color:#64748b;">(Truco: ${currentSpecies.mnemo})</span>`;
   hint.style.display = "block";
 }
 
