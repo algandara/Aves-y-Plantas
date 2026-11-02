@@ -26,10 +26,12 @@ function renderStudySection() {
               <span class="zoom-hint">🔍</span>
             </div>
           </td>
-          <td style="width: 32%;">
+          <td style="width: 38%;">
             <div class="species-de">${sp.de[0]}</div>
             <div class="species-es">${sp.es}</div>
-            <div style="font-size:11px; color:#94a3b8; font-style:italic;">${sp.sci}</div>
+            <div style="font-size:11px; color:#0284c7; font-weight:600; margin-top:3px; line-height:1.25;">
+              🔍 Lit.: <em>${sp.literal}</em>
+            </div>
           </td>
           <td>
             <div class="diff-trait">${sp.trait}</div>
@@ -41,7 +43,7 @@ function renderStudySection() {
 
     box.innerHTML = `
       <div class="group-title">
-        <span>${groupName.startsWith("Otras") ? "📌 " : "🔍 "}${groupName}</span>
+        <span>${groupName.startsWith("Plantas") || groupName.startsWith("Aves con patrón") ? "📌 " : "🔍 "}${groupName}</span>
         <span style="font-size:12px; color:#64748b; font-weight:normal;">(${groupItems.length} especies)</span>
       </div>
       <div class="table-container">
@@ -49,7 +51,7 @@ function renderStudySection() {
           <thead>
             <tr>
               <th>Foto fija</th>
-              <th>Especie</th>
+              <th>Especie y Significado</th>
               <th>Rasgo Clave Diferenciador</th>
             </tr>
           </thead>
