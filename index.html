@@ -7,20 +7,50 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Aves y Plantas">
-  <title>Aves y Plantas: Test & Estudio</title>
+  <title>Aves y Plantas en Alemán</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="card">
-    <!-- Pestañas de navegación -->
-    <div class="tab-header">
-      <button id="tabQuizBtn" class="tab-btn active" onclick="switchTab('quiz')">🎯 Test</button>
-      <button id="tabStudyBtn" class="tab-btn" onclick="switchTab('study')">📚 Repaso Comparativo</button>
+    
+    <!-- 1. PANTALLA: MENÚ PRINCIPAL -->
+    <div id="screenMenu">
+      <div class="menu-hero">
+        <h1 class="menu-title">🌿 Aves y Plantas 🦅</h1>
+        <p class="menu-subtitle">Elige un modo para comenzar a practicar</p>
+      </div>
+
+      <div class="menu-cards">
+        <!-- Tarjeta Test -->
+        <div class="menu-card" onclick="goToMode('quiz')">
+          <div class="card-icon">🎯</div>
+          <div class="card-text">
+            <h3>Modo Examen</h3>
+            <p>Identifica la especie viendo fotos de la naturaleza y escribe su nombre en alemán.</p>
+          </div>
+          <div class="card-arrow">➡️</div>
+        </div>
+
+        <!-- Tarjeta Repaso -->
+        <div class="menu-card" onclick="goToMode('study')">
+          <div class="card-icon">📚</div>
+          <div class="card-text">
+            <h3>Repaso Comparativo</h3>
+            <p>Compara especies parecidas en tablas organizadas con rasgos clave y fotos en detalle.</p>
+          </div>
+          <div class="card-arrow">➡️</div>
+        </div>
+      </div>
+      
+      <div class="menu-footer">
+        36 especies disponibles (24 aves y 12 plantas)
+      </div>
     </div>
 
-    <!-- PESTAÑA 1: TEST -->
-    <div id="tabQuiz">
-      <div class="top-bar">
+    <!-- 2. PANTALLA: TEST INTERACTIVO -->
+    <div id="screenQuiz" style="display: none;">
+      <div class="top-header-row">
+        <button class="back-home-btn" onclick="goToMode('menu')">🏠 Menú</button>
         <span id="sessionProgress">Especie 1 / 36</span>
         <span id="scoreDisplay">✅ 0 &nbsp; ❌ 0</span>
       </div>
@@ -53,53 +83,58 @@
         <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
           <button id="btnReviewMistakes" class="action-btn warning" onclick="startMistakesSession()" style="display:none;">🔁 Repasar solo las falladas</button>
           <button class="action-btn" onclick="startFullSession()">🔄 Empezar nueva sesión (las 36 especies)</button>
+          <button class="action-btn secondary" onclick="goToMode('menu')">🏠 Volver al Menú Principal</button>
         </div>
       </div>
     </div>
 
-    <!-- PESTAÑA 2: REPASO COMPARATIVO -->
-    <div id="tabStudy" style="display: none;">
+    <!-- 3. PANTALLA: REPASO COMPARATIVO -->
+    <div id="screenStudy" style="display: none;">
+      <div class="top-header-row" style="margin-bottom: 14px;">
+        <button class="back-home-btn" onclick="goToMode('menu')">🏠 Menú</button>
+        <strong style="color:#1e293b; font-size:15px;">📚 Repaso Comparativo</strong>
+        <span style="width: 50px;"></span>
+      </div>
       <p style="font-size: 13px; color: #64748b; margin-top: 0; line-height: 1.4;">
         Toca cualquier foto fija para <strong>ampliarla a pantalla completa</strong> y estudiar el rasgo morfológico clave.
       </p>
       <div id="studyContent"></div>
     </div>
+
   </div>
 
-  <!-- Visor Modal a Pantalla Completa -->
+  <!-- Visor Modal a Pantalla Completa (Lightbox) -->
   <div id="imageModal" class="modal" onclick="closeModal()">
     <div class="modal-close" onclick="closeModal()">&times;</div>
     <img id="modalImg" class="modal-content" src="" alt="Zoom">
     <div id="modalCaption" class="modal-caption"></div>
   </div>
 
-  <!-- Carga modular de datos y lógica -->
+  <!-- Archivos de datos y lógica -->
   <script src="data.js"></script>
   <script src="test.js"></script>
   <script src="study.js"></script>
   <script>
-    function switchTab(tab) {
-      const quizTab = document.getElementById("tabQuiz");
-      const studyTab = document.getElementById("tabStudy");
-      const btnQuiz = document.getElementById("tabQuizBtn");
-      const btnStudy = document.getElementById("tabStudyBtn");
+    // Enrutador del Menú Principal
+    function goToMode(mode) {
+      document.getElementById("screenMenu").style.display = "none";
+      document.getElementById("screenQuiz").style.display = "none";
+      document.getElementById("screenStudy").style.display = "none";
 
-      if (tab === "quiz") {
-        quizTab.style.display = "block";
-        studyTab.style.display = "none";
-        btnQuiz.classList.add("active");
-        btnStudy.classList.remove("active");
-      } else {
-        quizTab.style.display = "none";
-        studyTab.style.display = "block";
-        btnQuiz.classList.remove("active");
-        btnStudy.classList.add("active");
+      if (mode === "quiz") {
+        document.getElementById("screenQuiz").style.display = "block";
+        // Si no se había iniciado sesión o venimos desde cero, arrancamos
+        if (sessionDeck.length === 0 || deckIndex === -1) {
+          startFullSession();
+        }
+      } else if (mode === "study") {
+        document.getElementById("screenStudy").style.display = "block";
         renderStudySection();
+      } else {
+        // Volver al Menú
+        document.getElementById("screenMenu").style.display = "block";
       }
     }
-
-    // Inicializar test
-    startFullSession();
   </script>
 </body>
 </html>
