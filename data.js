@@ -1,7 +1,7 @@
 const speciesList = [
   // 1. PÁRIDOS DE PECHO AMARILLO
-  { de: ["Kohlmeise"], sci: "Parus major", literal: "Herrerillo de carbón", type: "bird", group: "Páridos de pecho amarillo", es: "Carbonero común", trait: "Cabeza negro carbón, mejillas blancas y corbata negra vertical sobre el pecho amarillo.", mnemo: "Cabeza carbón (Kohl) + maíz amarillo partido por corbata (Meise).", fixedImg: "fotos/kohlmeise.jpg" },
-  { de: ["Blaumeise"], sci: "Cyanistes caeruleus", literal: "Herrerillo azul", type: "bird", group: "Páridos de pecho amarillo", es: "Herrerillo común", trait: "Boina azul brillante en la coronilla, antifaz oscuro en el ojo y pecho amarillo sin corbata.", mnemo: "Boina azul (Blau) + vientre amarillo maíz (Meise).", fixedImg: "fotos/blaumeise.jpg" },
+  { de: ["Kohlmeise"], sci: "Parus major", literal: "Herrerillo de carbón", type: "bird", group: "Páridos de pecho amarillo", es: "Carbonero común", trait: "Cabeza negro, mejillas blancas y corbata negra sobre el pecho amarillo.", mnemo: "Cabeza carbón (Kohl) + pecho amarillo maíz (Meise).", fixedImg: "fotos/kohlmeise.jpg" },
+  { de: ["Blaumeise"], sci: "Cyanistes caeruleus", literal: "Herrerillo azul", type: "bird", group: "Páridos de pecho amarillo", es: "Herrerillo común", trait: "Boina azul brillante en la coronilla, antifaz oscuro en el ojo y pecho amarillo sin corbata.", mnemo: "Boina azul (Blau) + pecho amarillo maíz (Meise).", fixedImg: "fotos/blaumeise.jpg" },
 
   // 2. LAVANDERAS ESTILIZADAS
   { de: ["Bachstelze"], sci: "Motacilla alba", literal: "Zanco de arroyo", type: "bird", group: "Lavanderas estilizadas", es: "Lavandera blanca", trait: "Coloración estricta en blanco, gris y negro con babero negro; sin nada de amarillo.", mnemo: "Esmoquin blanco y negro de J. S. Bach (Bach) + esbelta (Stelze).", fixedImg: "fotos/bachstelze.jpg" },
