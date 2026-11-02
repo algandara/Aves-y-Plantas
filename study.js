@@ -17,11 +17,12 @@ function renderStudySection() {
       const escapedDe = sp.de[0].replace(/'/g, "\\'");
       const escapedEs = sp.es.replace(/'/g, "\\'");
       const escapedTrait = sp.trait.replace(/'/g, "\\'");
+      const escapedMnemo = sp.mnemo.replace(/'/g, "\\'");
 
       rowsHtml += `
         <tr>
           <td style="width: 76px; text-align: center;">
-            <div class="img-thumb-container" onclick="openModal('${sp.fixedImg}', '${escapedDe} (${escapedEs})', '${escapedTrait}')">
+            <div class="img-thumb-container" onclick="openModal('${sp.fixedImg}', '${escapedDe} (${escapedEs})', '${escapedTrait}', '${escapedMnemo}')">
               <img class="cell-img" src="${sp.fixedImg}" alt="${sp.de[0]}" loading="lazy" onerror="handleFixedImgError(this, '${sp.sci}')">
               <span class="zoom-hint">🔍</span>
             </div>
@@ -65,14 +66,20 @@ function renderStudySection() {
   });
 }
 
-function openModal(imgSrc, title, desc) {
+function openModal(imgSrc, title, desc, mnemo) {
   if (!imgSrc) return;
   const modal = document.getElementById("imageModal");
   const modalImg = document.getElementById("modalImg");
   const caption = document.getElementById("modalCaption");
   
   modalImg.src = imgSrc;
-  caption.innerHTML = `${title}<br><span style="font-size:13px; font-weight:normal; color:#cbd5e1;">${desc}</span>`;
+  caption.innerHTML = `
+    <div style="font-size: 18px; font-weight: bold; margin-bottom: 6px;">${title}</div>
+    <div style="font-size: 13px; font-weight: normal; color: #93c5fd; margin-bottom: 8px;"><strong>🔍 Rasgo clave:</strong> ${desc}</div>
+    <div style="font-size: 13px; font-weight: normal; color: #fde047; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px; line-height: 1.4;">
+      <strong>🧠 Cómo acordarse:</strong> ${mnemo}
+    </div>
+  `;
   modal.style.display = "flex";
 }
 
@@ -88,7 +95,7 @@ function handleFixedImgError(imgElement, sciName) {
       imgElement.src = urls[0];
       const parentThumb = imgElement.closest('.img-thumb-container');
       if (parentThumb) {
-        parentThumb.onclick = () => openModal(urls[0], `${sp.de[0]} (${sp.es})`, sp.trait);
+        parentThumb.onclick = () => openModal(urls[0], `${sp.de[0]} (${sp.es})`, sp.trait, sp.mnemo);
       }
     }
   });
