@@ -121,7 +121,6 @@ async function nextQuestion() {
   document.getElementById("counter").textContent = "Cargando galería...";
   document.getElementById("btnMorePhoto").disabled = true;
 
-  // Solo indica si es Planta o Ave (sin desvelar la categoría ni el subgrupo)
   const badge = document.getElementById("modeBadge");
   if (currentSpecies.type === "plant") {
     badge.textContent = "🌿 Planta";
@@ -203,6 +202,33 @@ function checkAnswer() {
     : `<span style="color:#dc2626; font-weight:bold;">❌ Era: ${currentSpecies.de[0]} (${currentSpecies.es})</span>`;
   hint.innerHTML = `<strong>💡 Grupo:</strong> ${currentSpecies.group}<br><strong>💡 Clave:</strong> ${currentSpecies.trait}<br><span style="font-size:12px; color:#64748b;">(Truco: ${currentSpecies.mnemo})</span>`;
   hint.style.display = "block";
+}
+
+// Función de Zoom en el Modo Examen
+function zoomQuizPhoto() {
+  const photoEl = document.getElementById("photo");
+  if (!photoEl || !photoEl.src || photoEl.src.includes("data:,") || !currentSpecies) return;
+
+  const imgSrc = photoEl.src;
+  
+  if (!currentQuestionAnswered) {
+    // Si aún no ha respondido, solo agranda la foto para ver los detalles sin spoilers
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImg");
+    const caption = document.getElementById("modalCaption");
+    
+    modalImg.src = imgSrc.replace("medium", "large").replace("square", "large");
+    caption.innerHTML = `<div style="font-size: 16px; font-weight: bold; color: #e2e8f0;">🔍 Vista en detalle (¿Qué especie es?)</div>`;
+    modal.style.display = "flex";
+  } else {
+    // Si ya respondió, muestra la foto ampliada junto con la solución y la mnemotecnia
+    openModal(
+      imgSrc, 
+      `${currentSpecies.de[0]} (${currentSpecies.es})`, 
+      currentSpecies.trait, 
+      currentSpecies.mnemo
+    );
+  }
 }
 
 document.getElementById("answer").addEventListener("keypress", function(e) {
