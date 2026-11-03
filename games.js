@@ -42,7 +42,7 @@ function setGameFilter(filter) {
 // ----- Juego 1: unir fotos con nombres -----
 
 // Nombres extra sin foto para dificultar la ronda; se eligen del mismo grupo cuando es posible
-const MATCH_DECOYS = 3;
+const MATCH_DECOYS = 4;
 
 function startMatchRound() {
   const pool = gamePool();
