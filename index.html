@@ -55,6 +55,22 @@
           </div>
         </div>
 
+        <!-- TARJETA 3: JUEGOS -->
+        <div class="mode-card card-game" onclick="goToMode('games')">
+          <div class="card-top-tag">PRACTICA JUGANDO</div>
+          <div class="card-main-content">
+            <div class="card-huge-icon">🧩</div>
+            <div class="card-headings">
+              <h2>Juegos</h2>
+              <p>Une fotos con sus nombres o adivina la especie por su rasgo clave.</p>
+            </div>
+          </div>
+          <div class="card-action-bar">
+            <span>Jugar</span>
+            <span class="action-arrow">➔</span>
+          </div>
+        </div>
+
       </div>
       
       <div class="menu-badge-footer">
@@ -147,6 +163,42 @@
       <div id="studyContent" style="display: none;"></div>
     </div>
 
+    <!-- PANTALLA 4: JUEGOS -->
+    <div id="screenGames" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="goToMode('menu')">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">🧩 Juegos</strong>
+        <span style="width: 60px;"></span>
+      </div>
+      <div id="gameChooser">
+        <button class="study-choice choice-match" onclick="startGame('match')">
+          <span class="choice-icon">🧩</span>
+          <span class="choice-text">
+            <strong>Unir fotos y nombres</strong>
+            <small>Empareja 6 fotos con sus nombres</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+        <button class="study-choice choice-who" onclick="startGame('who')">
+          <span class="choice-icon">❓</span>
+          <span class="choice-text">
+            <strong>¿Quién es?</strong>
+            <small>Adivina la especie por su rasgo clave</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+      </div>
+      <div id="gameContent" style="display: none;">
+        <button class="btn-back study-back" onclick="showGamesChooser()">← Juegos</button>
+        <div class="quiz-filter" id="gameFilter">
+          <button class="active" data-filter="all" onclick="setGameFilter('all')">Todas</button>
+          <button data-filter="bird" onclick="setGameFilter('bird')">🦅 Aves</button>
+          <button data-filter="plant" onclick="setGameFilter('plant')">🌿 Árboles y arbustos</button>
+        </div>
+        <div id="gameArea"></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Modal Lightbox -->
@@ -159,6 +211,7 @@
   <script src="data.js"></script>
   <script src="test.js"></script>
   <script src="study.js"></script>
+  <script src="games.js"></script>
   <script>
     // Conteos calculados desde los datos, para que no se queden desactualizados
     const totalSpecies = speciesList.length;
@@ -174,6 +227,7 @@
       document.getElementById("screenMenu").style.display = "none";
       document.getElementById("screenQuiz").style.display = "none";
       document.getElementById("screenStudy").style.display = "none";
+      document.getElementById("screenGames").style.display = "none";
 
       if (mode === "quiz") {
         document.getElementById("screenQuiz").style.display = "block";
@@ -183,6 +237,9 @@
       } else if (mode === "study") {
         document.getElementById("screenStudy").style.display = "block";
         showStudyChooser();
+      } else if (mode === "games") {
+        document.getElementById("screenGames").style.display = "block";
+        showGamesChooser();
       } else {
         document.getElementById("screenMenu").style.display = "block";
       }

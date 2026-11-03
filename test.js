@@ -234,13 +234,19 @@ async function nextQuestion() {
   try {
     const photos = await fetchPhotosForSpecies(currentSpecies);
     if (requestId !== activeRequestId) return;
-    photoPool = photos; currentPhotoIndex = 0;
-    document.getElementById("btnMorePhoto").disabled = false;
+    // Sin fotos de iNaturalist: usar la foto fija local como respaldo
+    photoPool = photos.length > 0 ? photos : [currentSpecies.fixedImg];
+    currentPhotoIndex = 0;
+    document.getElementById("btnMorePhoto").disabled = photoPool.length < 2;
     displayCurrentPhoto();
     prefetchNext();
   } catch (e) {
     if (requestId !== activeRequestId) return;
-    document.getElementById("counter").textContent = "Error de conexión.";
+    // Sin conexión: mostrar la foto fija local
+    photoPool = [currentSpecies.fixedImg];
+    currentPhotoIndex = 0;
+    document.getElementById("btnMorePhoto").disabled = true;
+    displayCurrentPhoto();
   }
 }
 

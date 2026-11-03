@@ -29,6 +29,12 @@
 .study-choice.choice-bird {
   background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
 }
+.study-choice.choice-match {
+  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+}
+.study-choice.choice-who {
+  background: linear-gradient(135deg, #c2410c 0%, #f97316 100%);
+}
 .study-choice.choice-plant {
   background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
 }
@@ -96,7 +102,8 @@
     font-size: 16px;
   }
   .menu-options {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
   }
   .mode-card {

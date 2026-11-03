@@ -203,6 +203,196 @@ body {
   color: #ffffff;
 }
 
+/* =========================================
+   JUEGOS (unir y ¿Quién es?)
+   ========================================= */
+.mode-card.card-game {
+  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.30);
+}
+.mode-card.card-game .card-top-tag {
+  color: #ddd6fe;
+  background: rgba(255, 255, 255, 0.15);
+}
+.mode-card.card-game .card-action-bar {
+  background: rgba(0, 0, 0, 0.15);
+}
+.game-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.game-tabs button {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.game-tabs button.active {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+}
+.game-status {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  margin: 10px 0;
+  text-align: center;
+}
+.match-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 10px;
+  align-items: start;
+}
+.match-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Fotos en cuadrícula de 2 columnas x 3 filas (ronda de 6 parejas) */
+.match-col.match-photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.match-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.match-card img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+.match-card.match-name {
+  justify-content: center;
+  min-height: 56px;
+  padding: 10px;
+}
+.match-card.selected {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+.match-card.wrong {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+.match-card.done {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  opacity: 0.6;
+}
+.match-card:disabled {
+  cursor: default;
+}
+.game-result {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #15803d;
+  margin: 16px 0 10px;
+}
+.who-clue {
+  background: #eff6ff;
+  border-radius: 14px;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: #1e3a8a;
+  margin: 8px 0 12px;
+}
+.who-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.who-option {
+  padding: 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+.who-option:disabled {
+  cursor: default;
+}
+.who-option.correct {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+.who-option.wrong {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+.who-feedback {
+  margin: 12px 0 6px;
+  text-align: center;
+  font-weight: bold;
+}
+.who-photo {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 14px;
+  margin: 0 auto 10px;
+}
+.who-source {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.who-photos-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.who-photo-card {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.who-photo-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+}
+.who-photo-actions {
+  text-align: center;
+  margin-top: 6px;
+}
+.who-photo-loading {
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+  margin: 8px 0 12px;
+}
+.who-mnemo {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
 .session-stat {
   font-size: 13px;
   font-weight: 700;
