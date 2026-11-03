@@ -117,11 +117,13 @@ function pickMatch(kind, sci) {
   if (st.selPhoto && st.selName) {
     if (st.selPhoto === st.selName) {
       st.matched.add(sci);
+      recordStat(st.items.find(s => s.sci === sci), true, "pareja");
       st.selPhoto = null;
       st.selName = null;
       renderMatch();
     } else {
       st.errors++;
+      recordStat(st.items.find(s => s.sci === st.selPhoto), false, "pareja");
       st.busy = true;
       // Guardar foto y nombre por separado: si no, la tarjeta del nombre correcto también se marcaría
       st.wrong = { photo: st.selPhoto, name: st.selName };
@@ -279,6 +281,7 @@ function answerWho(i) {
   const chosenSp = st.options[i];
   const ok = chosenSp === st.target;
   if (ok) st.ok++;
+  recordStat(st.target, ok, "quien");
   st.photos = {};
   loadWhoPhotos(st, st.target);
   if (!ok) loadWhoPhotos(st, chosenSp);

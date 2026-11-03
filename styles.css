@@ -204,6 +204,122 @@ body {
 }
 
 /* =========================================
+   ESTADÍSTICAS
+   ========================================= */
+.mode-card.card-stats {
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  box-shadow: 0 8px 20px rgba(20, 184, 166, 0.30);
+}
+.mode-card.card-stats .card-top-tag {
+  color: #ccfbf1;
+  background: rgba(255, 255, 255, 0.15);
+}
+.mode-card.card-stats .card-action-bar {
+  background: rgba(0, 0, 0, 0.15);
+}
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px;
+  text-align: center;
+}
+.stat-card strong {
+  display: block;
+  font-size: 22px;
+  color: #0f172a;
+}
+.stat-card span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+}
+.stats-section {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.stats-section h3 {
+  margin: 0 0 10px 0;
+  font-size: 15px;
+  color: #0f172a;
+}
+.stats-empty {
+  text-align: center;
+  font-size: 14px;
+  color: #64748b;
+  padding: 16px;
+}
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.bar-label {
+  flex: 0 0 120px;
+  color: #334155;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-track {
+  flex: 1;
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+}
+.bar-fill.good { background: #16a34a; }
+.bar-fill.warn { background: #d97706; }
+.bar-fill.bad { background: #dc2626; }
+.bar-value {
+  flex: 0 0 110px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+.days-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 120px;
+}
+.day-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+.day-bar {
+  width: 100%;
+  background: #3b82f6;
+  border-radius: 6px 6px 0 0;
+}
+.day-label {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* =========================================
    JUEGOS (unir y ¿Quién es?)
    ========================================= */
 .mode-card.card-game {

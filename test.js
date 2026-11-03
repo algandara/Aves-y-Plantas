@@ -6,13 +6,15 @@ function loadProgress() {
     if (data && typeof data === "object") {
       return {
         stats: data.stats && typeof data.stats === "object" ? data.stats : {},
-        mistakes: Array.isArray(data.mistakes) ? data.mistakes : []
+        mistakes: Array.isArray(data.mistakes) ? data.mistakes : [],
+        modes: data.modes && typeof data.modes === "object" ? data.modes : {},
+        history: Array.isArray(data.history) ? data.history : []
       };
     }
   } catch (e) {
     // Si el dato guardado está roto, empezamos de cero
   }
-  return { stats: {}, mistakes: [] };
+  return { stats: {}, mistakes: [], modes: {}, history: [] };
 }
 
 function saveProgress() {
@@ -67,11 +69,28 @@ function removeMistake(sp) {
   syncMistakes();
 }
 
-function recordStat(sp, ok) {
+const HISTORY_LIMIT = 3000;
+
+function dayKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+// Guarda una respuesta: acumulado por especie, por modo y en el historial con fecha
+function recordStat(sp, ok, mode = "examen") {
   const st = progress.stats[sp.sci] || { ok: 0, fail: 0 };
   if (ok) st.ok++;
   else st.fail++;
   progress.stats[sp.sci] = st;
+
+  const m = progress.modes[mode] || { ok: 0, total: 0 };
+  m.total++;
+  if (ok) m.ok++;
+  progress.modes[mode] = m;
+
+  progress.history.push({ d: dayKey(new Date()), m: mode, s: sp.sci, ok: ok ? 1 : 0 });
+  if (progress.history.length > HISTORY_LIMIT) {
+    progress.history.splice(0, progress.history.length - HISTORY_LIMIT);
+  }
   saveProgress();
 }
 
@@ -86,11 +105,12 @@ function hardestSpecies(n) {
 }
 
 function resetProgress() {
-  if (!confirm("¿Borrar el historial guardado en este navegador?")) return;
-  progress = { stats: {}, mistakes: [] };
+  if (!confirm("¿Borrar todas las estadísticas y el progreso guardado en este navegador?")) return;
+  progress = { stats: {}, mistakes: [], modes: {}, history: [] };
   mistakesDeck = [];
   saveProgress();
-  showSessionSummary();
+  if (document.getElementById("screenStats").style.display === "block") renderStats();
+  else showSessionSummary();
 }
 
 // ===== Filtro por sección (todas / aves / árboles) =====
