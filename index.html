@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Aves y Plantas">
   <title>Aves y Plantas en Alemán</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="desktop.css">
 </head>
 <body>
   <div class="card">
@@ -57,7 +58,7 @@
       </div>
       
       <div class="menu-badge-footer">
-        36 especies disponibles (24 aves y 12 plantas)[cite: 1]
+        <span id="menuCount"></span>
       </div>
     </div>
 
@@ -65,7 +66,7 @@
     <div id="screenQuiz" style="display: none;">
       <div class="nav-header">
         <button class="btn-back" onclick="goToMode('menu')">← Menú</button>
-        <span id="sessionProgress" class="session-stat">Especie 1 / 36</span>
+        <span id="sessionProgress" class="session-stat"></span>
         <span id="scoreDisplay" class="session-stat">✅ 0 &nbsp; ❌ 0</span>
       </div>
 
@@ -73,11 +74,17 @@
         <div id="progressBar" class="progress-bar-fill"></div>
       </div>
 
+      <div class="quiz-filter" id="quizFilter">
+        <button class="active" data-filter="all" onclick="setQuizFilter('all')">Todas</button>
+        <button data-filter="bird" onclick="setQuizFilter('bird')">🦅 Aves</button>
+        <button data-filter="plant" onclick="setQuizFilter('plant')">🌿 Árboles y arbustos</button>
+      </div>
+
       <div id="quizScreen">
         <div style="text-align: center;"><div id="modeBadge" class="type-pill">Cargando...</div></div>
         
         <div class="img-box">
-          <img id="photo" class="quiz-img" src="" alt="Cargando foto...">
+          <img id="photo" class="quiz-img" src="" alt="Cargando foto..." onclick="zoomQuizPhoto()" style="cursor: zoom-in;">
         </div>
         <div id="counter" class="photo-counter"></div>
 
@@ -86,10 +93,12 @@
           <button id="btnCheck" class="btn-primary" onclick="checkAnswer()">OK</button>
         </div>
 
+        <div id="pistaBox" class="hint-box" style="display: none;"></div>
         <div id="feedback"></div>
         <div id="hint" class="hint-box"></div>
 
         <div class="btn-action-row">
+          <button id="btnHint" class="btn-secondary" onclick="showHint()">💡 Pista</button>
           <button id="btnMorePhoto" class="btn-secondary" onclick="showNextPhotoOfSameSpecies()">🔄 Otra foto</button>
           <button id="btnNextSpecies" class="btn-primary" onclick="nextQuestion()">Siguiente →</button>
         </div>
@@ -100,7 +109,8 @@
         <p id="summaryStats" style="font-size: 15px; color: #475569; margin: 16px 0; line-height: 1.5;"></p>
         <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 24px;">
           <button id="btnReviewMistakes" class="btn-primary" style="background: #d97706;" onclick="startMistakesSession()">🔁 Repasar solo falladas</button>
-          <button class="btn-primary" onclick="startFullSession()">🔄 Nueva ronda (las 36)</button>
+          <button id="btnNewRound" class="btn-primary" onclick="startFullSession()">🔄 Nueva ronda</button>
+          <button class="btn-secondary" onclick="resetProgress()">🗑 Borrar historial guardado</button>
           <button class="btn-secondary" onclick="goToMode('menu')">← Volver al Menú</button>
         </div>
       </div>
@@ -116,7 +126,25 @@
       <p style="font-size: 13px; color: #64748b; margin: 4px 0 16px 0; line-height: 1.4;">
         Toca cualquier foto para <strong>ampliarla a pantalla completa</strong> y estudiar el rasgo morfológico clave.
       </p>
-      <div id="studyContent"></div>
+      <div id="studyChooser">
+        <button class="study-choice choice-bird" onclick="renderStudySection('bird')">
+          <span class="choice-icon">🦅</span>
+          <span class="choice-text">
+            <strong>Aves</strong>
+            <small id="choiceBirdCount"></small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+        <button class="study-choice choice-plant" onclick="renderStudySection('plant')">
+          <span class="choice-icon">🌿</span>
+          <span class="choice-text">
+            <strong>Árboles y arbustos</strong>
+            <small id="choicePlantCount"></small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+      </div>
+      <div id="studyContent" style="display: none;"></div>
     </div>
 
   </div>
@@ -132,6 +160,16 @@
   <script src="test.js"></script>
   <script src="study.js"></script>
   <script>
+    // Conteos calculados desde los datos, para que no se queden desactualizados
+    const totalSpecies = speciesList.length;
+    const totalBirds = speciesList.filter(s => s.type === "bird").length;
+    const totalPlants = speciesList.filter(s => s.type === "plant").length;
+    document.getElementById("menuCount").textContent = `${totalSpecies} especies disponibles (${totalBirds} aves y ${totalPlants} plantas)`;
+    document.getElementById("sessionProgress").textContent = `Especie 1 / ${totalSpecies}`;
+    document.getElementById("btnNewRound").textContent = `🔄 Nueva ronda (las ${totalSpecies})`;
+    document.getElementById("choiceBirdCount").textContent = `${totalBirds} especies`;
+    document.getElementById("choicePlantCount").textContent = `${totalPlants} especies`;
+
     function goToMode(mode) {
       document.getElementById("screenMenu").style.display = "none";
       document.getElementById("screenQuiz").style.display = "none";
@@ -144,7 +182,7 @@
         }
       } else if (mode === "study") {
         document.getElementById("screenStudy").style.display = "block";
-        renderStudySection();
+        showStudyChooser();
       } else {
         document.getElementById("screenMenu").style.display = "block";
       }

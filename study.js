@@ -1,16 +1,45 @@
 let studyRendered = false;
 
-function renderStudySection() {
-  if (studyRendered) return;
-  studyRendered = true;
+function showStudyChooser() {
+  document.getElementById("studyChooser").style.display = "block";
   const container = document.getElementById("studyContent");
+  container.style.display = "none";
+  container.innerHTML = "";
+}
 
-  const groups = [...new Set(speciesList.map(s => s.group))];
+function renderStudySection(type) {
+  document.getElementById("studyChooser").style.display = "none";
+  const container = document.getElementById("studyContent");
+  container.innerHTML = "";
+  container.style.display = "block";
+
+  const backBtn = document.createElement("button");
+  backBtn.className = "btn-back study-back";
+  backBtn.textContent = "← Secciones";
+  backBtn.onclick = showStudyChooser;
+  container.appendChild(backBtn);
+
+  const sectionHeader = document.createElement("h2");
+  sectionHeader.className = "study-section-title";
+  sectionHeader.textContent = type === "bird" ? "🦅 Aves" : "🌿 Árboles y arbustos";
+  container.appendChild(sectionHeader);
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "study-toolbar";
+  toolbar.innerHTML = `
+    <button class="btn-back" onclick="setAllGroups(true)">Expandir todo</button>
+    <button class="btn-back" onclick="setAllGroups(false)">Plegar todo</button>
+  `;
+  container.appendChild(toolbar);
+
+  const groups = [...new Set(speciesList.filter(s => s.type === type).map(s => s.group))];
 
   groups.forEach(groupName => {
     const groupItems = speciesList.filter(s => s.group === groupName);
-    const box = document.createElement("div");
+    const icon = groupItems[0].type === "plant" ? "🌿" : "🦅";
+    const box = document.createElement("details");
     box.className = "study-group";
+    box.open = true;
 
     let rowsHtml = "";
     groupItems.forEach((sp) => {
@@ -43,10 +72,10 @@ function renderStudySection() {
     });
 
     box.innerHTML = `
-      <div class="group-title">
-        <span>${groupName.startsWith("Plantas") || groupName.startsWith("Aves con patrón") ? "📌 " : "🔍 "}${groupName}</span>
-        <span style="font-size:12px; color:#64748b; font-weight:normal;">(${groupItems.length} especies)</span>
-      </div>
+      <summary class="group-title">
+        <span>${icon} ${groupName}</span>
+        <span class="group-meta">(${groupItems.length} ${groupItems.length === 1 ? "especie" : "especies"})<span class="group-chevron">▾</span></span>
+      </summary>
       <div class="table-container">
         <table class="comp-table">
           <thead>
@@ -63,6 +92,12 @@ function renderStudySection() {
       </div>
     `;
     container.appendChild(box);
+  });
+}
+
+function setAllGroups(open) {
+  document.querySelectorAll("#studyContent .study-group").forEach(d => {
+    d.open = open;
   });
 }
 

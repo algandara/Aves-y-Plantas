@@ -1,8 +1,43 @@
+// ===== Progreso guardado en el navegador (localStorage) =====
+const PROGRESS_KEY = "avesPlantas.progreso.v1";
+const MAX_ATTEMPTS = 2;
+
+function loadProgress() {
+  try {
+    const data = JSON.parse(localStorage.getItem(PROGRESS_KEY));
+    if (data && typeof data === "object") {
+      return {
+        stats: data.stats && typeof data.stats === "object" ? data.stats : {},
+        mistakes: Array.isArray(data.mistakes) ? data.mistakes : []
+      };
+    }
+  } catch (e) {
+    // Si el dato guardado está roto, empezamos de cero
+  }
+  return { stats: {}, mistakes: [] };
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  } catch (e) {
+    // Sin almacenamiento disponible (p. ej. modo privado): la app sigue funcionando
+  }
+}
+
+let progress = loadProgress();
+
 let sessionDeck = [];
-let mistakesDeck = [];
+// Especies falladas y aún no acertadas (se mantienen entre rondas y al recargar)
+let mistakesDeck = progress.mistakes
+  .map(sci => speciesList.find(s => s.sci === sci))
+  .filter(Boolean);
 let deckIndex = -1;
 let currentSpecies = null;
 let currentQuestionAnswered = false;
+let currentAttempts = 0;
+let hintLevel = 0;
+let quizFilter = "all";
 let correctCount = 0;
 let wrongCount = 0;
 
@@ -20,12 +55,68 @@ function shuffleArray(arr) {
   return copy;
 }
 
-function startFullSession() {
-  sessionDeck = shuffleArray(speciesList);
+function syncMistakes() {
+  progress.mistakes = mistakesDeck.map(s => s.sci);
+  saveProgress();
+}
+
+function addMistake(sp) {
+  if (!mistakesDeck.some(s => s.sci === sp.sci)) mistakesDeck.push(sp);
+  syncMistakes();
+}
+
+function removeMistake(sp) {
+  mistakesDeck = mistakesDeck.filter(s => s.sci !== sp.sci);
+  syncMistakes();
+}
+
+function recordStat(sp, ok) {
+  const st = progress.stats[sp.sci] || { ok: 0, fail: 0 };
+  if (ok) st.ok++;
+  else st.fail++;
+  progress.stats[sp.sci] = st;
+  saveProgress();
+}
+
+function hardestSpecies(n) {
+  return Object.entries(progress.stats)
+    .filter(([, st]) => st.fail > 0)
+    .map(([sci, st]) => ({ sci, fail: st.fail, ratio: st.fail / (st.ok + st.fail) }))
+    .sort((a, b) => b.ratio - a.ratio || b.fail - a.fail)
+    .slice(0, n)
+    .map(x => speciesList.find(s => s.sci === x.sci))
+    .filter(Boolean);
+}
+
+function resetProgress() {
+  if (!confirm("¿Borrar el historial guardado en este navegador?")) return;
+  progress = { stats: {}, mistakes: [] };
   mistakesDeck = [];
+  saveProgress();
+  showSessionSummary();
+}
+
+// ===== Filtro por sección (todas / aves / árboles) =====
+function speciesForFilter() {
+  if (quizFilter === "bird") return speciesList.filter(s => s.type === "bird");
+  if (quizFilter === "plant") return speciesList.filter(s => s.type === "plant");
+  return speciesList;
+}
+
+function setQuizFilter(filter) {
+  quizFilter = filter;
+  document.querySelectorAll(".quiz-filter button").forEach(b => {
+    b.classList.toggle("active", b.dataset.filter === filter);
+  });
+  startFullSession();
+}
+
+function startFullSession() {
+  sessionDeck = shuffleArray(speciesForFilter());
   deckIndex = -1;
   correctCount = 0;
   wrongCount = 0;
+  document.getElementById("btnNewRound").textContent = `🔄 Nueva ronda (las ${sessionDeck.length})`;
   document.getElementById("summaryScreen").style.display = "none";
   document.getElementById("quizScreen").style.display = "block";
   nextQuestion();
@@ -33,7 +124,6 @@ function startFullSession() {
 
 function startMistakesSession() {
   sessionDeck = shuffleArray(mistakesDeck);
-  mistakesDeck = [];
   deckIndex = -1;
   correctCount = 0;
   wrongCount = 0;
@@ -94,12 +184,20 @@ async function fetchPhotosForSpecies(speciesObj) {
   return shuffleArray(urls);
 }
 
+// Precarga los datos y la primera foto de la siguiente especie mientras se responde
+function prefetchNext() {
+  const next = sessionDeck[deckIndex + 1];
+  if (!next) return;
+  fetchPhotosForSpecies(next)
+    .then(urls => { if (urls.length > 0) new Image().src = urls[0]; })
+    .catch(() => {});
+}
+
 async function nextQuestion() {
   if (deckIndex >= 0 && !currentQuestionAnswered && currentSpecies) {
     wrongCount++;
-    if (!mistakesDeck.some(s => s.sci === currentSpecies.sci)) {
-      mistakesDeck.push(currentSpecies);
-    }
+    addMistake(currentSpecies);
+    recordStat(currentSpecies, false);
   }
 
   deckIndex++;
@@ -111,11 +209,16 @@ async function nextQuestion() {
 
   currentSpecies = sessionDeck[deckIndex];
   currentQuestionAnswered = false;
+  currentAttempts = 0;
+  hintLevel = 0;
   updateTopBar();
 
   const requestId = ++activeRequestId;
   document.getElementById("feedback").innerHTML = "";
   document.getElementById("hint").style.display = "none";
+  document.getElementById("pistaBox").style.display = "none";
+  document.getElementById("btnHint").disabled = false;
+  document.getElementById("btnHint").textContent = "💡 Pista";
   document.getElementById("answer").value = "";
   document.getElementById("photo").src = "";
   document.getElementById("counter").textContent = "Cargando galería...";
@@ -124,11 +227,11 @@ async function nextQuestion() {
   const badge = document.getElementById("modeBadge");
   if (currentSpecies.type === "plant") {
     badge.textContent = "🌿 Planta";
-    badge.style.background = "#dcfce7"; 
+    badge.style.background = "#dcfce7";
     badge.style.color = "#166534";
   } else {
     badge.textContent = "🦅 Ave";
-    badge.style.background = "#dbeafe"; 
+    badge.style.background = "#dbeafe";
     badge.style.color = "#1e40af";
   }
 
@@ -138,6 +241,7 @@ async function nextQuestion() {
     photoPool = photos; currentPhotoIndex = 0;
     document.getElementById("btnMorePhoto").disabled = false;
     displayCurrentPhoto();
+    prefetchNext();
   } catch (e) {
     if (requestId !== activeRequestId) return;
     document.getElementById("counter").textContent = "Error de conexión.";
@@ -148,11 +252,17 @@ function showSessionSummary() {
   document.getElementById("quizScreen").style.display = "none";
   document.getElementById("summaryScreen").style.display = "block";
   const total = sessionDeck.length;
-  document.getElementById("summaryStats").innerHTML = 
+  let statsHtml =
     `Has acertado <strong>${correctCount}</strong> de <strong>${total}</strong> especies.<br>` +
-    (mistakesDeck.length > 0 
-      ? `Tienes <strong>${mistakesDeck.length}</strong> especie(s) pendiente(s) de dominar.` 
-      : `¡Enhorabuena! Has dominado todas las especies de esta ronda.`);
+    (mistakesDeck.length > 0
+      ? `Tienes <strong>${mistakesDeck.length}</strong> especie(s) pendiente(s) de dominar.`
+      : `¡Enhorabuena! No tienes especies pendientes.`);
+
+  const hardest = hardestSpecies(3);
+  if (hardest.length > 0) {
+    statsHtml += `<br><span style="font-size:14px;">Más difíciles hasta ahora: ${hardest.map(s => `<strong>${s.de[0]}</strong>`).join(", ")}.</span>`;
+  }
+  document.getElementById("summaryStats").innerHTML = statsHtml;
 
   const btnMistakes = document.getElementById("btnReviewMistakes");
   if (mistakesDeck.length > 0) {
@@ -177,60 +287,150 @@ function showNextPhotoOfSameSpecies() {
   }
 }
 
-function checkAnswer() {
-  if (!currentSpecies) return;
-  const userAns = document.getElementById("answer").value.trim().toLowerCase();
-  const isCorrect = currentSpecies.de.some(ans => ans.toLowerCase() === userAns);
-  const fb = document.getElementById("feedback");
-  const hint = document.getElementById("hint");
+// Normaliza un nombre alemán para comparar: sin mayúsculas, sin umlauts ni ß,
+// sin espacios ni guiones, y "ae/oe/ue" equivalen a "ä/ö/ü".
+function normalizeGerman(text) {
+  return text
+    .toLowerCase()
+    .replace(/ß/g, "ss")
+    .replace(/[äöü]/g, c => ({ ä: "a", ö: "o", ü: "u" })[c])
+    .replace(/(a|o|u)e/g, "$1")
+    .replace(/[\s-]/g, "");
+}
 
-  if (!currentQuestionAnswered) {
-    currentQuestionAnswered = true;
-    if (isCorrect) {
-      correctCount++;
-    } else {
-      wrongCount++;
-      if (!mistakesDeck.some(s => s.sci === currentSpecies.sci)) {
-        mistakesDeck.push(currentSpecies);
-      }
+// Distancia de Levenshtein (número mínimo de cambios entre dos textos)
+function levenshtein(a, b) {
+  const prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
     }
-    updateTopBar();
+    prev.splice(0, prev.length, ...cur);
+  }
+  return prev[b.length];
+}
+
+// Acepta una errata de una letra en nombres largos, salvo que sea otro nombre válido
+function isTypo(userNorm, names) {
+  if (speciesList.some(s => s.de.some(d => normalizeGerman(d) === userNorm))) return false;
+  return names.some(name => {
+    const target = normalizeGerman(name);
+    return target.length >= 7 && levenshtein(userNorm, target) === 1;
+  });
+}
+
+function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
+
+function showHint() {
+  if (!currentSpecies || currentQuestionAnswered || hintLevel >= 2) return;
+  hintLevel++;
+  const sp = currentSpecies;
+  let text = `💡 <strong>Grupo:</strong> ${sp.group}`;
+  if (hintLevel === 2) {
+    const letters = sp.de[0].replace(/\s/g, "").length;
+    text += `<br>💡 <strong>Empieza por:</strong> «${sp.de[0][0]}» · ${letters} letras`;
+  }
+  const box = document.getElementById("pistaBox");
+  box.innerHTML = text;
+  box.style.display = "block";
+  const btn = document.getElementById("btnHint");
+  btn.textContent = hintLevel === 1 ? "💡 Más pista" : "💡 Pistas agotadas";
+  btn.disabled = hintLevel >= 2;
+}
+
+function revealAnswer(isCorrect, rawAnswer, typo) {
+  const sp = currentSpecies;
+  currentQuestionAnswered = true;
+  if (isCorrect) {
+    correctCount++;
+    removeMistake(sp);
+  } else {
+    wrongCount++;
+    addMistake(sp);
+  }
+  recordStat(sp, isCorrect);
+  updateTopBar();
+
+  const esc = escapeHtml(rawAnswer);
+  let msg;
+  if (isCorrect) {
+    msg = `<span style="color:#16a34a; font-weight:bold;">✅ ¡Correcto! ${sp.de[0]} (${sp.es})</span>`;
+    if (typo) msg += `<br><span style="font-size:13px; color:#64748b;">Escribiste «${esc}»: tiene una errata, pero se acepta.</span>`;
+  } else {
+    msg = `<span style="color:#dc2626; font-weight:bold;">❌ Era: ${sp.de[0]} (${sp.es})</span>`;
+    if (rawAnswer) msg += `<br><span style="font-size:13px; color:#64748b;">Tu respuesta: «${esc}»</span>`;
+  }
+  msg += `<br><span style="font-size:13px; color:#0284c7;"><em>${sp.sci}</em></span>`;
+  document.getElementById("feedback").innerHTML = msg;
+
+  const hint = document.getElementById("hint");
+  hint.innerHTML = `<strong>💡 Grupo:</strong> ${sp.group}<br><strong>💡 Clave:</strong> ${sp.trait}<br><span style="font-size:12px; color:#64748b;">(Truco: ${sp.mnemo})</span>`;
+  hint.style.display = "block";
+  document.getElementById("pistaBox").style.display = "none";
+  document.getElementById("btnHint").disabled = true;
+}
+
+function checkAnswer() {
+  if (!currentSpecies || currentQuestionAnswered) return;
+  const raw = document.getElementById("answer").value.trim();
+  if (!raw) return;
+  const userAns = normalizeGerman(raw);
+
+  if (currentSpecies.de.some(name => normalizeGerman(name) === userAns)) {
+    revealAnswer(true, raw, false);
+    return;
+  }
+  if (isTypo(userAns, currentSpecies.de)) {
+    revealAnswer(true, raw, true);
+    return;
   }
 
-  fb.innerHTML = isCorrect 
-    ? `<span style="color:#16a34a; font-weight:bold;">✅ ¡Correcto! ${currentSpecies.de[0]} (${currentSpecies.es})</span>`
-    : `<span style="color:#dc2626; font-weight:bold;">❌ Era: ${currentSpecies.de[0]} (${currentSpecies.es})</span>`;
-  hint.innerHTML = `<strong>💡 Grupo:</strong> ${currentSpecies.group}<br><strong>💡 Clave:</strong> ${currentSpecies.trait}<br><span style="font-size:12px; color:#64748b;">(Truco: ${currentSpecies.mnemo})</span>`;
-  hint.style.display = "block";
+  currentAttempts++;
+  if (currentAttempts < MAX_ATTEMPTS) {
+    const left = MAX_ATTEMPTS - currentAttempts;
+    document.getElementById("feedback").innerHTML =
+      `<span style="color:#d97706; font-weight:bold;">🤔 No es esa. Te queda ${left} intento${left === 1 ? "" : "s"}.</span>`;
+    document.getElementById("answer").select();
+    return;
+  }
+  revealAnswer(false, raw, false);
 }
 
 // Función de Zoom en el Modo Examen
 function zoomQuizPhoto() {
   const photoEl = document.getElementById("photo");
-  if (!photoEl || !photoEl.src || photoEl.src.includes("data:,") || !currentSpecies) return;
+  // Usar el atributo (no la propiedad): la propiedad src devuelve la URL de la página si está vacío
+  const rawSrc = photoEl ? photoEl.getAttribute("src") : "";
+  if (!rawSrc || rawSrc.includes("data:,") || !currentSpecies) return;
 
   const imgSrc = photoEl.src;
-  
+
   if (!currentQuestionAnswered) {
     // Si aún no ha respondido, solo agranda la foto para ver los detalles sin spoilers
     const modal = document.getElementById("imageModal");
     const modalImg = document.getElementById("modalImg");
     const caption = document.getElementById("modalCaption");
-    
+
     modalImg.src = imgSrc.replace("medium", "large").replace("square", "large");
     caption.innerHTML = `<div style="font-size: 16px; font-weight: bold; color: #e2e8f0;">🔍 Vista en detalle (¿Qué especie es?)</div>`;
     modal.style.display = "flex";
   } else {
     // Si ya respondió, muestra la foto ampliada junto con la solución y la mnemotecnia
     openModal(
-      imgSrc, 
-      `${currentSpecies.de[0]} (${currentSpecies.es})`, 
-      currentSpecies.trait, 
+      imgSrc,
+      `${currentSpecies.de[0]} (${currentSpecies.es})`,
+      currentSpecies.trait,
       currentSpecies.mnemo
     );
   }
 }
 
+// Enter: si aún no se ha respondido, comprueba; si ya se respondió, pasa a la siguiente
 document.getElementById("answer").addEventListener("keypress", function(e) {
-  if (e.key === "Enter") { checkAnswer(); this.blur(); }
+  if (e.key !== "Enter") return;
+  if (currentQuestionAnswered) nextQuestion();
+  else checkAnswer();
 });
