@@ -206,6 +206,15 @@
     font-size: 13px !important;
   }
 
+  /* JUEGO DE UNIR: fotos a la izquierda y nombres a la derecha */
+  .match-grid {
+    grid-template-columns: 3fr 2fr;
+  }
+  .match-col.match-names {
+    display: flex;
+    flex-direction: column;
+  }
+
   /* LIGHTBOX */
   .modal-content {
     max-height: 80vh;

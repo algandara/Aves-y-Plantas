@@ -98,7 +98,7 @@ function renderMatch() {
     <div class="game-status">Parejas: ${st.matched.size} / ${MATCH_SIZE} · Errores: ${st.errors}</div>
     <div class="match-grid">
       <div class="match-col match-photos">${photos}</div>
-      <div class="match-col">${names}</div>
+      <div class="match-col match-names">${names}</div>
     </div>
     ${won ? `
       <div class="game-result">🎉 ¡Ronda completa con ${st.errors} error(es)!</div>
