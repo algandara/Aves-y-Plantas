@@ -1,7 +1,5 @@
 // ===== Progreso guardado en el navegador (localStorage) =====
 const PROGRESS_KEY = "avesPlantas.progreso.v1";
-const MAX_ATTEMPTS = 2;
-
 function loadProgress() {
   try {
     const data = JSON.parse(localStorage.getItem(PROGRESS_KEY));
@@ -35,7 +33,6 @@ let mistakesDeck = progress.mistakes
 let deckIndex = -1;
 let currentSpecies = null;
 let currentQuestionAnswered = false;
-let currentAttempts = 0;
 let hintLevel = 0;
 let quizFilter = "all";
 let correctCount = 0;
@@ -209,7 +206,6 @@ async function nextQuestion() {
 
   currentSpecies = sessionDeck[deckIndex];
   currentQuestionAnswered = false;
-  currentAttempts = 0;
   hintLevel = 0;
   updateTopBar();
 
@@ -388,14 +384,6 @@ function checkAnswer() {
     return;
   }
 
-  currentAttempts++;
-  if (currentAttempts < MAX_ATTEMPTS) {
-    const left = MAX_ATTEMPTS - currentAttempts;
-    document.getElementById("feedback").innerHTML =
-      `<span style="color:#d97706; font-weight:bold;">🤔 No es esa. Te queda ${left} intento${left === 1 ? "" : "s"}.</span>`;
-    document.getElementById("answer").select();
-    return;
-  }
   revealAnswer(false, raw, false);
 }
 
