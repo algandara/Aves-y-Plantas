@@ -14,22 +14,22 @@ function shuffleList(arr) {
   return a;
 }
 
-// Color de cada parte en el juego de unir (uno distinto por parte)
+// Color de cada parte cuando está bien: una gama de verdes, distinto para cada parte
 const PART_COLORS = {
-  dickdarm: "#f97316",
-  duennndarm: "#eab308",
-  blinddarm: "#84cc16",
-  wurmfortsatz: "#22c55e",
-  enddarm: "#14b8a6",
-  leber: "#06b6d4",
-  gallenblase: "#3b82f6",
-  magen: "#8b5cf6",
-  bauchspeicheldruese: "#d946ef",
-  zwoelffingerdarm: "#ec4899",
-  speiseroehre: "#f43f5e",
-  zaehne: "#a16207",
-  speicheldruesen: "#64748b",
-  ohrspeicheldruese: "#78350f"
+  dickdarm: "#14532d",
+  duennndarm: "#84cc16",
+  blinddarm: "#065f46",
+  wurmfortsatz: "#a3e635",
+  enddarm: "#166534",
+  leber: "#4ade80",
+  gallenblase: "#047857",
+  magen: "#bbf7d0",
+  bauchspeicheldruese: "#22c55e",
+  zwoelffingerdarm: "#365314",
+  speiseroehre: "#86efac",
+  zaehne: "#15803d",
+  speicheldruesen: "#d9f99d",
+  ohrspeicheldruese: "#0f766e"
 };
 
 // Ancho del trazo de color de los tubos (en coordenadas de la imagen), para cubrir el interior del tubo
@@ -47,7 +47,7 @@ function regionOf(p) {
 // Esquema: la imagen de fondo y, encima, cada parte en un grupo con su id
 function schemaSvg(classes, mode) {
   const groups = bodyParts.map(p => {
-    const color = mode === "escribir" ? "#22c55e" : PART_COLORS[p.id];
+    const color = PART_COLORS[p.id];
     const width = TUBE_WIDTH[p.id] || 10;
     return `<g class="organ-group ${classes[p.id] || ""}" data-id="${p.id}" style="--c:${color};--w:${width}">` +
       `${regionOf(p)}${p.svg}</g>`;
