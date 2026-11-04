@@ -183,11 +183,12 @@ body {
 
 .quiz-filter {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin: 0 0 12px 0;
 }
 .quiz-filter button {
-  flex: 1;
+  flex: 1 1 auto;
   padding: 8px 6px;
   border: 1px solid #e2e8f0;
   border-radius: 12px;

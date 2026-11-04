@@ -117,6 +117,12 @@ function resetProgress() {
 function speciesForFilter() {
   if (quizFilter === "bird") return speciesList.filter(s => s.type === "bird");
   if (quizFilter === "plant") return speciesList.filter(s => s.type === "plant");
+  if (quizFilter === "mix") {
+    // Examen de 10: 5 aves y 5 plantas aleatorias (cambia en cada ronda)
+    const birds = shuffleArray(speciesList.filter(s => s.type === "bird")).slice(0, 5);
+    const plants = shuffleArray(speciesList.filter(s => s.type === "plant")).slice(0, 5);
+    return [...birds, ...plants];
+  }
   return speciesList;
 }
 
@@ -133,7 +139,8 @@ function startFullSession() {
   deckIndex = -1;
   correctCount = 0;
   wrongCount = 0;
-  document.getElementById("btnNewRound").textContent = `🔄 Nueva ronda (las ${sessionDeck.length})`;
+  const roundLabel = quizFilter === "mix" ? "5 aves + 5 plantas" : `las ${sessionDeck.length}`;
+  document.getElementById("btnNewRound").textContent = `🔄 Nueva ronda (${roundLabel})`;
   document.getElementById("summaryScreen").style.display = "none";
   document.getElementById("quizScreen").style.display = "block";
   nextQuestion();
