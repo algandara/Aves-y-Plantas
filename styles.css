@@ -225,8 +225,6 @@ a.mode-card {
 .mode-card.card-tema-cuerpo {
   background: linear-gradient(135deg, #9f1239 0%, #e11d48 100%);
   box-shadow: 0 8px 20px rgba(225, 29, 72, 0.30);
-  opacity: 0.6;
-  cursor: default;
 }
 .mode-card.card-tema-cuerpo .card-top-tag {
   color: #ffe4e6;

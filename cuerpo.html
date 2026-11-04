@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="referrer" content="no-referrer">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Estudio">
+  <title>Estudio · Cuerpo humano</title>
+  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="desktop.css?v=3">
+  <link rel="stylesheet" href="cuerpo.css?v=2">
+</head>
+<body>
+  <div class="card">
+
+    <!-- MENÚ DEL TEMA -->
+    <div id="bodyMenu">
+      <div class="menu-header">
+        <a href="index.html" class="btn-back" style="display: inline-block; margin-bottom: 12px; text-decoration: none;">← Temas</a>
+        <h1>Cuerpo humano 🫀</h1>
+        <p>Aparato digestivo en alemán</p>
+      </div>
+
+      <div id="bodyChooser">
+        <button class="study-choice choice-match" onclick="startBodyGame('unir')">
+          <span class="choice-icon">🧩</span>
+          <span class="choice-text">
+            <strong>Unir nombres</strong>
+            <small>Une cada nombre con su parte del esquema</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+        <button class="study-choice choice-who" onclick="startBodyGame('escribir')">
+          <span class="choice-icon">✍️</span>
+          <span class="choice-text">
+            <strong>Escribir nombres</strong>
+            <small>Ve las partes una a una y escribe su nombre en alemán</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- JUEGO: UNIR -->
+    <div id="bodyUnir" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="showBodyMenu()">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">🧩 Unir nombres</strong>
+        <button class="btn-secondary" style="padding: 6px 10px;" onclick="startUnirRound()">🔄 Reiniciar</button>
+      </div>
+      <div id="unirArea"></div>
+    </div>
+
+    <!-- EXAMEN: ESCRIBIR -->
+    <div id="bodyEscribir" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="showBodyMenu()">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">✍️ Escribir nombres</strong>
+        <span style="width: 60px;"></span>
+      </div>
+      <div id="escribirArea"></div>
+    </div>
+
+  </div>
+
+  <script src="temas/cuerpo-humano/data.js?v=6"></script>
+  <script src="cuerpo.js?v=6"></script>
+</body>
+</html>
