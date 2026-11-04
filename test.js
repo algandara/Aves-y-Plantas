@@ -25,7 +25,21 @@ function saveProgress() {
   }
 }
 
-let progress = loadProgress();
+// Migra datos antiguos: lo que se guardó como "examen" pasa a "práctica completa"
+function migrateModes(p) {
+  if (p.modes.examen) {
+    const old = p.modes.examen;
+    const cur = p.modes.practica || { ok: 0, total: 0 };
+    p.modes.practica = { ok: cur.ok + old.ok, total: cur.total + old.total };
+    delete p.modes.examen;
+  }
+  p.history.forEach(h => {
+    if (h.m === "examen") h.m = "practica";
+  });
+  return p;
+}
+
+let progress = migrateModes(loadProgress());
 
 let sessionDeck = [];
 // Especies falladas y aún no acertadas (se mantienen entre rondas y al recargar)
@@ -114,6 +128,11 @@ function resetProgress() {
 }
 
 // ===== Filtro por sección (todas / aves / árboles) =====
+// Modo de estadísticas según la opción del examen elegida
+function quizMode() {
+  return quizFilter === "mix" ? "examen5" : "practica";
+}
+
 function speciesForFilter() {
   if (quizFilter === "bird") return speciesList.filter(s => s.type === "bird");
   if (quizFilter === "plant") return speciesList.filter(s => s.type === "plant");
@@ -128,9 +147,11 @@ function speciesForFilter() {
 
 function setQuizFilter(filter) {
   quizFilter = filter;
-  document.querySelectorAll(".quiz-filter button").forEach(b => {
+  document.querySelectorAll("#quizFilter button").forEach(b => {
     b.classList.toggle("active", b.dataset.filter === filter);
   });
+  // El 5+5 tiene su propio menú, así que aquí no se muestran los filtros
+  document.getElementById("quizFilter").style.display = filter === "mix" ? "none" : "flex";
   startFullSession();
 }
 
@@ -221,7 +242,7 @@ async function nextQuestion() {
   if (deckIndex >= 0 && !currentQuestionAnswered && currentSpecies) {
     wrongCount++;
     addMistake(currentSpecies);
-    recordStat(currentSpecies, false);
+    recordStat(currentSpecies, false, quizMode());
   }
 
   deckIndex++;
@@ -380,7 +401,7 @@ function revealAnswer(isCorrect, rawAnswer, typo) {
     wrongCount++;
     addMistake(sp);
   }
-  recordStat(sp, isCorrect);
+  recordStat(sp, isCorrect, quizMode());
   updateTopBar();
 
   const esc = escapeHtml(rawAnswer);

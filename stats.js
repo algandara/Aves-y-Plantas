@@ -1,6 +1,11 @@
 // ===== Estadísticas: se calculan a partir del progreso guardado en el navegador =====
 
-const STAT_MODES = { examen: "🎯 Examen", pareja: "🧩 En pareja", quien: "❓ ¿Quién es?" };
+const STAT_MODES = {
+  practica: "📖 Práctica completa",
+  examen5: "🎲 Examen 5+5",
+  pareja: "🧩 En pareja",
+  quien: "❓ ¿Quién es?"
+};
 let statsFilter = "all";
 
 function setStatsFilter(filter) {

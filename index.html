@@ -29,12 +29,28 @@
           <div class="card-main-content">
             <div class="card-huge-icon">🎯</div>
             <div class="card-headings">
-              <h2>Modo Examen</h2>
+              <h2>Modo Práctica</h2>
               <p>Te muestra una foto aleatoria y debes escribir el nombre en alemán.</p>
             </div>
           </div>
           <div class="card-action-bar">
             <span>Empezar Test</span>
+            <span class="action-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- TARJETA: EXAMEN 5+5 -->
+        <div class="mode-card card-exam5" onclick="goToMode('exam5')">
+          <div class="card-top-tag">PRUEBA CORTA</div>
+          <div class="card-main-content">
+            <div class="card-huge-icon">🎲</div>
+            <div class="card-headings">
+              <h2>Examen 5+5</h2>
+              <p>5 aves y 5 plantas al azar. Diez especies por ronda, cada vez distintas.</p>
+            </div>
+          </div>
+          <div class="card-action-bar">
+            <span>Empezar prueba</span>
             <span class="action-arrow">➔</span>
           </div>
         </div>
@@ -107,10 +123,9 @@
       </div>
 
       <div class="quiz-filter" id="quizFilter">
-        <button class="active" data-filter="all" onclick="setQuizFilter('all')">Todas</button>
+        <button class="active" data-filter="all" onclick="setQuizFilter('all')">📖 Práctica completa</button>
         <button data-filter="bird" onclick="setQuizFilter('bird')">🦅 Aves</button>
         <button data-filter="plant" onclick="setQuizFilter('plant')">🌿 Árboles y arbustos</button>
-        <button data-filter="mix" onclick="setQuizFilter('mix')">🎲 Examen 5+5</button>
       </div>
 
       <div id="quizScreen">
@@ -260,9 +275,11 @@
 
       if (mode === "quiz") {
         document.getElementById("screenQuiz").style.display = "block";
-        if (sessionDeck.length === 0 || deckIndex === -1) {
-          startFullSession();
-        }
+        if (quizFilter === "mix") setQuizFilter("all");
+        else if (sessionDeck.length === 0 || deckIndex === -1) startFullSession();
+      } else if (mode === "exam5") {
+        document.getElementById("screenQuiz").style.display = "block";
+        if (quizFilter !== "mix" || deckIndex === -1) setQuizFilter("mix");
       } else if (mode === "study") {
         document.getElementById("screenStudy").style.display = "block";
         showStudyChooser();

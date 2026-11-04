@@ -207,6 +207,17 @@ body {
 /* =========================================
    ESTADÍSTICAS
    ========================================= */
+.mode-card.card-exam5 {
+  background: linear-gradient(135deg, #c2410c 0%, #f97316 100%);
+  box-shadow: 0 8px 20px rgba(249, 115, 22, 0.30);
+}
+.mode-card.card-exam5 .card-top-tag {
+  color: #ffedd5;
+  background: rgba(255, 255, 255, 0.15);
+}
+.mode-card.card-exam5 .card-action-bar {
+  background: rgba(0, 0, 0, 0.15);
+}
 .mode-card.card-stats {
   background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
   box-shadow: 0 8px 20px rgba(20, 184, 166, 0.30);
