@@ -6,7 +6,7 @@
 const BODY_VIEW = { width: 736, height: 1408 };
 
 // Fondo del esquema: el dibujo original
-const BODY_CALCO = `<image href="temas/cuerpo-humano/fotos/aparato_digestivo.jpg" x="0" y="0" width="736" height="1408" />`;
+const BODY_CALCO = `<image href="temas/cuerpo-humano/fotos/aparato-digestivo.jpg" x="0" y="0" width="736" height="1408" />`;
 
 const bodyParts = [
   { id: "dickdarm", de: "Dickdarm", es: "intestino grueso",

@@ -61,10 +61,9 @@ function onOrganClick(mode, event) {
   const g = event.target.closest("[data-id]");
   if (!g) return;
   if (mode === "unir") pickUnir("organ", g.dataset.id);
-  else if (mode === "ruta") pickRuta(g.dataset.id);
 }
 
-const BODY_SCREENS = ["bodyMenu", "bodyUnir", "bodyRuta", "bodyEscribir", "bodyStats"];
+const BODY_SCREENS = ["bodyMenu", "bodyUnir", "bodyEscribir", "bodyStats"];
 
 function showBodyScreen(id) {
   BODY_SCREENS.forEach(s => {
@@ -76,16 +75,12 @@ function showBodyMenu() {
   showBodyScreen("bodyMenu");
   unirState = null;
   escribirState = null;
-  routeState = null;
 }
 
 function startBodyGame(mode) {
   if (mode === "unir") {
     showBodyScreen("bodyUnir");
     startUnirRound();
-  } else if (mode === "ruta") {
-    showBodyScreen("bodyRuta");
-    startRutaRound();
   } else if (mode === "stats") {
     showBodyScreen("bodyStats");
     renderBodyStats();
@@ -103,7 +98,6 @@ function emptyBodyStats() {
   return {
     games: {
       unir: { completed: 0, errors: 0, bestErrors: null },
-      ruta: { completed: 0, errors: 0, bestErrors: null },
       escribir: { exams: 0, ok: 0, total: 0, bestOk: null }
     },
     // por parte: cuántas veces fue acierto a la primera (ok) y cuántas no (fail)
@@ -135,7 +129,7 @@ function countOrgan(id, ok) {
   saveBodyStats();
 }
 
-// Juegos de partida (unir y ruta): una partida completada con X errores
+// Partida completada de unir, con sus errores
 function recordRound(game, errors) {
   const g = bodyStats.games[game];
   g.completed++;
@@ -190,83 +184,14 @@ function renderBodyStats() {
       <div class="stat-card"><strong>${g.unir.completed}</strong><span>Unir completadas</span></div>
       <div class="stat-card"><strong>${avg(g.unir.errors, g.unir.completed)}</strong><span>Errores medios (unir)</span></div>
       <div class="stat-card"><strong>${val(g.unir.bestErrors)}</strong><span>Mejor unir (errores)</span></div>
-      <div class="stat-card"><strong>${g.ruta.completed}</strong><span>Rutas completas</span></div>
-      <div class="stat-card"><strong>${avg(g.ruta.errors, g.ruta.completed)}</strong><span>Errores medios (ruta)</span></div>
       <div class="stat-card"><strong>${g.escribir.exams}</strong><span>Exámenes escritos</span></div>
       <div class="stat-card"><strong>${pctWrite}</strong><span>Acierto al escribir</span></div>
     </div>
     <h3 style="font-size: 15px; color: #0f172a; margin: 16px 0 6px;">Partes del cuerpo (de peor a mejor)</h3>
     ${bars}
-    <p class="unir-hint">Cuenta los aciertos a la primera de cada parte en los tres juegos.</p>
+    <p class="unir-hint">Cuenta los aciertos a la primera de cada parte en los dos juegos.</p>
     <button class="btn-secondary" onclick="resetBodyStats()">🗑️ Borrar estadísticas</button>
     <button class="btn-secondary" onclick="showBodyMenu()">← Menú</button>
-  `;
-}
-
-// ----- Juego 3: ruta del alimento -----
-
-const ROUTE = ["zaehne", "speiseroehre", "magen", "zwoelffingerdarm", "duennndarm", "blinddarm", "dickdarm", "enddarm"];
-let routeState = null;
-
-function startRutaRound() {
-  routeState = { idx: 0, errors: 0, wrong: null, busy: false, missed: new Set(), recorded: false };
-  renderRuta();
-}
-
-function pickRuta(id) {
-  const st = routeState;
-  if (!st || st.busy || st.idx >= ROUTE.length) return;
-  const target = ROUTE[st.idx];
-  if (id === target) {
-    countOrgan(id, !st.missed.has(id));
-    st.idx++;
-    renderRuta();
-    return;
-  }
-  st.errors++;
-  st.missed.add(target);
-  st.wrong = id;
-  st.busy = true;
-  renderRuta();
-  setTimeout(() => {
-    if (routeState !== st) return;
-    st.wrong = null;
-    st.busy = false;
-    renderRuta();
-  }, 700);
-}
-
-function renderRuta() {
-  const st = routeState;
-  const total = ROUTE.length;
-
-  if (st.idx >= total) {
-    if (!st.recorded) {
-      recordRound("ruta", st.errors);
-      st.recorded = true;
-    }
-    const classes = {};
-    ROUTE.forEach(id => { classes[id] = "correct"; });
-    document.getElementById("rutaArea").innerHTML = `
-      <div class="game-status">Ruta completa · Errores: ${st.errors}</div>
-      ${schemaSvg(classes, "ruta")}
-      <div class="game-result">🎉 ¡Ruta completa con ${st.errors} error(es)!</div>
-      <button class="btn-primary" onclick="startRutaRound()">Repetir ruta →</button>
-    `;
-    return;
-  }
-
-  const classes = {};
-  ROUTE.slice(0, st.idx).forEach(id => { classes[id] = "correct"; });
-  classes[ROUTE[st.idx]] = "target";
-  if (st.wrong) classes[st.wrong] = "wrong";
-  const next = bodyParts.find(p => p.id === ROUTE[st.idx]);
-
-  document.getElementById("rutaArea").innerHTML = `
-    <div class="game-status">Parada ${st.idx + 1} / ${total} · Errores: ${st.errors}</div>
-    <div class="who-clue"><strong>🍽️ Siguiente parada: ${next.es}</strong></div>
-    ${schemaSvg(classes, "ruta")}
-    <p class="unir-hint">Toca en el esquema el órgano por donde pasa la comida ahora.</p>
   `;
 }
 

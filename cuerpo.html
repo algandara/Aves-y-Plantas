@@ -8,9 +8,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Estudio">
   <title>Estudio · Cuerpo humano</title>
-  <link rel="stylesheet" href="styles.css?v=3">
-  <link rel="stylesheet" href="desktop.css?v=3">
-  <link rel="stylesheet" href="cuerpo.css?v=3">
+  <link rel="stylesheet" href="css/styles.css?v=3">
+  <link rel="stylesheet" href="css/desktop.css?v=3">
+  <link rel="stylesheet" href="temas/cuerpo-humano/cuerpo.css?v=4">
 </head>
 <body>
   <div class="card">
@@ -37,14 +37,6 @@
           <span class="choice-text">
             <strong>Escribir nombres</strong>
             <small>Ve las partes una a una y escribe su nombre en alemán</small>
-          </span>
-          <span class="choice-arrow">➔</span>
-        </button>
-        <button class="study-choice choice-route" onclick="startBodyGame('ruta')">
-          <span class="choice-icon">🍽️</span>
-          <span class="choice-text">
-            <strong>Ruta del alimento</strong>
-            <small>Toca los órganos por donde pasa la comida, en orden</small>
           </span>
           <span class="choice-arrow">➔</span>
         </button>
@@ -79,16 +71,6 @@
       <div id="escribirArea"></div>
     </div>
 
-    <!-- JUEGO: RUTA DEL ALIMENTO -->
-    <div id="bodyRuta" style="display: none;">
-      <div class="nav-header">
-        <button class="btn-back" onclick="showBodyMenu()">← Menú</button>
-        <strong style="color:#0f172a; font-size:15px;">🍽️ Ruta del alimento</strong>
-        <button class="btn-secondary" style="padding: 6px 10px;" onclick="startRutaRound()">🔄 Reiniciar</button>
-      </div>
-      <div id="rutaArea"></div>
-    </div>
-
     <!-- ESTADÍSTICAS -->
     <div id="bodyStats" style="display: none;">
       <div class="nav-header">
@@ -101,7 +83,7 @@
 
   </div>
 
-  <script src="temas/cuerpo-humano/data.js?v=8"></script>
-  <script src="cuerpo.js?v=8"></script>
+  <script src="temas/cuerpo-humano/data.js?v=9"></script>
+  <script src="temas/cuerpo-humano/cuerpo.js?v=9"></script>
 </body>
 </html>
