@@ -61,27 +61,213 @@ function onOrganClick(mode, event) {
   const g = event.target.closest("[data-id]");
   if (!g) return;
   if (mode === "unir") pickUnir("organ", g.dataset.id);
+  else if (mode === "ruta") pickRuta(g.dataset.id);
+}
+
+const BODY_SCREENS = ["bodyMenu", "bodyUnir", "bodyRuta", "bodyEscribir", "bodyStats"];
+
+function showBodyScreen(id) {
+  BODY_SCREENS.forEach(s => {
+    document.getElementById(s).style.display = s === id ? "block" : "none";
+  });
 }
 
 function showBodyMenu() {
-  document.getElementById("bodyMenu").style.display = "block";
-  document.getElementById("bodyUnir").style.display = "none";
-  document.getElementById("bodyEscribir").style.display = "none";
+  showBodyScreen("bodyMenu");
   unirState = null;
   escribirState = null;
+  routeState = null;
 }
 
 function startBodyGame(mode) {
-  document.getElementById("bodyMenu").style.display = "none";
   if (mode === "unir") {
-    document.getElementById("bodyUnir").style.display = "block";
-    document.getElementById("bodyEscribir").style.display = "none";
+    showBodyScreen("bodyUnir");
     startUnirRound();
+  } else if (mode === "ruta") {
+    showBodyScreen("bodyRuta");
+    startRutaRound();
+  } else if (mode === "stats") {
+    showBodyScreen("bodyStats");
+    renderBodyStats();
   } else {
-    document.getElementById("bodyEscribir").style.display = "block";
-    document.getElementById("bodyUnir").style.display = "none";
+    showBodyScreen("bodyEscribir");
     startEscribirRound();
   }
+}
+
+// ----- Estadísticas (se guardan en este navegador) -----
+
+const STATS_KEY = "cuerpo_stats_v1";
+
+function emptyBodyStats() {
+  return {
+    games: {
+      unir: { completed: 0, errors: 0, bestErrors: null },
+      ruta: { completed: 0, errors: 0, bestErrors: null },
+      escribir: { exams: 0, ok: 0, total: 0, bestOk: null }
+    },
+    // por parte: cuántas veces fue acierto a la primera (ok) y cuántas no (fail)
+    organs: {}
+  };
+}
+
+function loadBodyStats() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STATS_KEY));
+    if (raw && raw.games && raw.organs) return raw;
+  } catch (e) { /* sin datos guardados */ }
+  return emptyBodyStats();
+}
+
+let bodyStats = loadBodyStats();
+
+function saveBodyStats() {
+  try {
+    localStorage.setItem(STATS_KEY, JSON.stringify(bodyStats));
+  } catch (e) { /* almacenamiento no disponible */ }
+}
+
+function countOrgan(id, ok) {
+  const o = bodyStats.organs[id] || { ok: 0, fail: 0 };
+  if (ok) o.ok++;
+  else o.fail++;
+  bodyStats.organs[id] = o;
+  saveBodyStats();
+}
+
+// Juegos de partida (unir y ruta): una partida completada con X errores
+function recordRound(game, errors) {
+  const g = bodyStats.games[game];
+  g.completed++;
+  g.errors += errors;
+  g.bestErrors = g.bestErrors === null ? errors : Math.min(g.bestErrors, errors);
+  saveBodyStats();
+}
+
+function recordEscribir(st) {
+  const g = bodyStats.games.escribir;
+  g.exams++;
+  g.ok += st.ok;
+  g.total += st.order.length;
+  g.bestOk = g.bestOk === null ? st.ok : Math.max(g.bestOk, st.ok);
+  saveBodyStats();
+}
+
+function resetBodyStats() {
+  if (!confirm("¿Borrar todas las estadísticas del cuerpo humano?")) return;
+  bodyStats = emptyBodyStats();
+  saveBodyStats();
+  renderBodyStats();
+}
+
+function renderBodyStats() {
+  const g = bodyStats.games;
+  const avg = (sum, n) => (n ? (sum / n).toFixed(1) : "–");
+  const val = v => (v === null ? "–" : v);
+  const levelClass = pct => (pct === null ? "" : pct >= 80 ? "good" : pct >= 50 ? "warn" : "bad");
+
+  const rows = bodyParts.map(p => {
+    const o = bodyStats.organs[p.id] || { ok: 0, fail: 0 };
+    const n = o.ok + o.fail;
+    return { p, n, ok: o.ok, pct: n ? Math.round(100 * o.ok / n) : null };
+  }).sort((a, b) => {
+    const ka = a.pct === null ? 1000 : a.pct;
+    const kb = b.pct === null ? 1000 : b.pct;
+    return ka - kb;
+  });
+
+  const bars = rows.map(r => `
+    <div class="bar-row">
+      <div class="bar-label" title="${r.p.de} (${r.p.es})">${r.p.de}</div>
+      <div class="bar-track"><div class="bar-fill ${levelClass(r.pct)}" style="width: ${r.pct === null ? 0 : r.pct}%"></div></div>
+      <div class="bar-value">${r.pct === null ? "sin datos" : `${r.pct}% (${r.ok}/${r.n})`}</div>
+    </div>`).join("");
+
+  const pctWrite = g.escribir.total ? `${Math.round(100 * g.escribir.ok / g.escribir.total)}%` : "–";
+
+  document.getElementById("statsArea").innerHTML = `
+    <div class="stat-cards">
+      <div class="stat-card"><strong>${g.unir.completed}</strong><span>Unir completadas</span></div>
+      <div class="stat-card"><strong>${avg(g.unir.errors, g.unir.completed)}</strong><span>Errores medios (unir)</span></div>
+      <div class="stat-card"><strong>${val(g.unir.bestErrors)}</strong><span>Mejor unir (errores)</span></div>
+      <div class="stat-card"><strong>${g.ruta.completed}</strong><span>Rutas completas</span></div>
+      <div class="stat-card"><strong>${avg(g.ruta.errors, g.ruta.completed)}</strong><span>Errores medios (ruta)</span></div>
+      <div class="stat-card"><strong>${g.escribir.exams}</strong><span>Exámenes escritos</span></div>
+      <div class="stat-card"><strong>${pctWrite}</strong><span>Acierto al escribir</span></div>
+    </div>
+    <h3 style="font-size: 15px; color: #0f172a; margin: 16px 0 6px;">Partes del cuerpo (de peor a mejor)</h3>
+    ${bars}
+    <p class="unir-hint">Cuenta los aciertos a la primera de cada parte en los tres juegos.</p>
+    <button class="btn-secondary" onclick="resetBodyStats()">🗑️ Borrar estadísticas</button>
+    <button class="btn-secondary" onclick="showBodyMenu()">← Menú</button>
+  `;
+}
+
+// ----- Juego 3: ruta del alimento -----
+
+const ROUTE = ["zaehne", "speiseroehre", "magen", "zwoelffingerdarm", "duennndarm", "blinddarm", "dickdarm", "enddarm"];
+let routeState = null;
+
+function startRutaRound() {
+  routeState = { idx: 0, errors: 0, wrong: null, busy: false, missed: new Set(), recorded: false };
+  renderRuta();
+}
+
+function pickRuta(id) {
+  const st = routeState;
+  if (!st || st.busy || st.idx >= ROUTE.length) return;
+  const target = ROUTE[st.idx];
+  if (id === target) {
+    countOrgan(id, !st.missed.has(id));
+    st.idx++;
+    renderRuta();
+    return;
+  }
+  st.errors++;
+  st.missed.add(target);
+  st.wrong = id;
+  st.busy = true;
+  renderRuta();
+  setTimeout(() => {
+    if (routeState !== st) return;
+    st.wrong = null;
+    st.busy = false;
+    renderRuta();
+  }, 700);
+}
+
+function renderRuta() {
+  const st = routeState;
+  const total = ROUTE.length;
+
+  if (st.idx >= total) {
+    if (!st.recorded) {
+      recordRound("ruta", st.errors);
+      st.recorded = true;
+    }
+    const classes = {};
+    ROUTE.forEach(id => { classes[id] = "correct"; });
+    document.getElementById("rutaArea").innerHTML = `
+      <div class="game-status">Ruta completa · Errores: ${st.errors}</div>
+      ${schemaSvg(classes, "ruta")}
+      <div class="game-result">🎉 ¡Ruta completa con ${st.errors} error(es)!</div>
+      <button class="btn-primary" onclick="startRutaRound()">Repetir ruta →</button>
+    `;
+    return;
+  }
+
+  const classes = {};
+  ROUTE.slice(0, st.idx).forEach(id => { classes[id] = "correct"; });
+  classes[ROUTE[st.idx]] = "target";
+  if (st.wrong) classes[st.wrong] = "wrong";
+  const next = bodyParts.find(p => p.id === ROUTE[st.idx]);
+
+  document.getElementById("rutaArea").innerHTML = `
+    <div class="game-status">Parada ${st.idx + 1} / ${total} · Errores: ${st.errors}</div>
+    <div class="who-clue"><strong>🍽️ Siguiente parada: ${next.es}</strong></div>
+    ${schemaSvg(classes, "ruta")}
+    <p class="unir-hint">Toca en el esquema el órgano por donde pasa la comida ahora.</p>
+  `;
 }
 
 // ----- Juego 1: unir nombres con partes -----
@@ -92,6 +278,7 @@ function startUnirRound() {
     selName: null,
     selOrgan: null,
     matched: new Set(),
+    missed: new Set(),
     errors: 0,
     wrong: null,
     busy: false
@@ -142,12 +329,15 @@ function pickUnir(kind, id) {
 
   if (st.selName && st.selOrgan) {
     if (st.selName === st.selOrgan) {
+      countOrgan(id, !st.missed.has(id));
       st.matched.add(id);
       st.selName = null;
       st.selOrgan = null;
+      if (st.matched.size === bodyParts.length) recordRound("unir", st.errors);
     } else {
       // Solo se marcan en rojo el nombre y la parte que elegiste, nunca la correcta
       st.errors++;
+      st.missed.add(st.selName);
       st.wrong = { name: st.selName, organ: st.selOrgan };
       st.busy = true;
       renderUnir();
@@ -173,7 +363,8 @@ function startEscribirRound() {
     idx: 0,
     ok: 0,
     misses: [],
-    answered: null
+    answered: null,
+    recorded: false
   };
   renderEscribir();
 }
@@ -227,6 +418,7 @@ function checkEscribir() {
   st.answered = { typed, ok: res.ok, typo: res.typo };
   if (res.ok) st.ok++;
   else st.misses.push(target);
+  countOrgan(target.id, res.ok);
   renderEscribir();
 }
 
@@ -259,6 +451,10 @@ function renderEscribir() {
 
   // Fin del examen
   if (st.idx >= total) {
+    if (!st.recorded) {
+      recordEscribir(st);
+      st.recorded = true;
+    }
     const misses = st.misses.map(p => `<li><strong>${p.de}</strong> (${p.es})</li>`).join("");
     document.getElementById("escribirArea").innerHTML = `
       <div class="game-status">Examen terminado · ${st.ok} / ${total} correctas</div>

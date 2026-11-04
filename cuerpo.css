@@ -54,6 +54,14 @@
   stroke-linejoin: round;
 }
 
+/* Botones del menú: ruta y estadísticas */
+.study-choice.choice-route {
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+}
+.study-choice.choice-stats {
+  background: linear-gradient(135deg, #334155 0%, #64748b 100%);
+}
+
 /* Botones de nombres (juego unir) */
 .name-grid {
   display: grid;
