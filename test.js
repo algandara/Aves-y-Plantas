@@ -1,5 +1,8 @@
 // ===== Progreso guardado en el navegador (localStorage) =====
-const PROGRESS_KEY = "avesPlantas.progreso.v1";
+// Cada tema guarda su progreso aparte. "Aves y plantas" conserva la clave antigua para no perder datos
+const PROGRESS_KEY = TOPIC_ID === "aves-y-plantas"
+  ? "avesPlantas.progreso.v1"
+  : `estudio.progreso.${TOPIC_ID}.v1`;
 function loadProgress() {
   try {
     const data = JSON.parse(localStorage.getItem(PROGRESS_KEY));

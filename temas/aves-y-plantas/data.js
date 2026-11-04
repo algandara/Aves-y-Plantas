@@ -73,3 +73,8 @@ const speciesList = [
   { de: ["Berg-Ahorn", "Bergahorn"], sci: "Acer pseudoplatanus", literal: "Arce de montaña", type: "plant", group: "Árboles por silueta de hoja", familia: "Sapindaceae", colorLlamativo: "Verde con envés blanquecino", es: "Arce sicómoro / Arce blanco", trait: "Hojas grandes de 5 lóbulos con muescas puntiagudas, envés blanquecino y frutos en sámaras casi en ángulo recto.", mnemo: "Berg = montaña: hojas con cinco picos. Ahorn ≈ cuerno: frutos con alas.", fixedImg: "fotos/berg-ahorn.jpg" },
   { de: ["Silber-Weide", "Silberweide"], sci: "Salix alba", literal: "Sauce plateado", type: "plant", group: "Árboles por silueta de hoja", familia: "Salicaceae", colorLlamativo: "Hojas plateadas", es: "Sauce blanco", trait: "Hojas lanceoladas estrechas cubiertas de fina pelusa plateada y sedosa por ambas caras.", mnemo: "Silber ≈ silver: hojas plateadas. Weide ≈ wide: ramas abiertas.", fixedImg: "fotos/silber-weide.jpg" }
 ];
+
+// Las fotos fijas están dentro de la carpeta del tema: se completa la ruta aquí
+speciesList.forEach(sp => {
+  sp.fixedImg = `temas/${TOPIC_ID}/${sp.fixedImg}`;
+});

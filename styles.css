@@ -207,6 +207,35 @@ body {
 /* =========================================
    ESTADÍSTICAS
    ========================================= */
+/* Tarjetas de tema (pantalla inicial "Estudio") */
+a.mode-card {
+  text-decoration: none;
+}
+.mode-card.card-tema-aves {
+  background: linear-gradient(135deg, #1d4ed8 0%, #16a34a 100%);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.30);
+}
+.mode-card.card-tema-aves .card-top-tag {
+  color: #dbeafe;
+  background: rgba(255, 255, 255, 0.15);
+}
+.mode-card.card-tema-aves .card-action-bar {
+  background: rgba(0, 0, 0, 0.15);
+}
+.mode-card.card-tema-cuerpo {
+  background: linear-gradient(135deg, #9f1239 0%, #e11d48 100%);
+  box-shadow: 0 8px 20px rgba(225, 29, 72, 0.30);
+  opacity: 0.6;
+  cursor: default;
+}
+.mode-card.card-tema-cuerpo .card-top-tag {
+  color: #ffe4e6;
+  background: rgba(255, 255, 255, 0.15);
+}
+.mode-card.card-tema-cuerpo .card-action-bar {
+  background: rgba(0, 0, 0, 0.15);
+}
+
 .mode-card.card-exam5 {
   background: linear-gradient(135deg, #c2410c 0%, #f97316 100%);
   box-shadow: 0 8px 20px rgba(249, 115, 22, 0.30);

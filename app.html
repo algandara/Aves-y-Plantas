@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="referrer" content="no-referrer">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Aves y Plantas">
+  <title>Estudio</title>
+  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="desktop.css?v=2">
+</head>
+<body>
+  <div class="card">
+    
+    <!-- PANTALLA 1: MENÚ PRINCIPAL -->
+    <div id="screenMenu">
+      <div class="menu-header">
+        <a href="index.html" class="btn-back" style="display: inline-block; margin-bottom: 12px; text-decoration: none;">← Temas</a>
+        <h1>Aves y Plantas 🦅🌿</h1>
+        <p>¿Qué quieres hacer hoy?</p>
+      </div>
+
+      <div class="menu-options">
+        
+        <!-- TARJETA 1: MODO TEST (AZUL VIBRANTE) -->
+        <div class="mode-card card-quiz" onclick="goToMode('quiz')">
+          <div class="card-top-tag">EVALUACIÓN ACTIVA</div>
+          <div class="card-main-content">
+            <div class="card-huge-icon">🎯</div>
+            <div class="card-headings">
+              <h2>Modo Práctica</h2>
+              <p>Te muestra una foto aleatoria y debes escribir el nombre en alemán.</p>
+            </div>
+          </div>
+          <div class="card-action-bar">
+            <span>Empezar Test</span>
+            <span class="action-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- TARJETA: EXAMEN 5+5 -->
+        <div class="mode-card card-exam5" onclick="goToMode('exam5')">
+          <div class="card-top-tag">PRUEBA CORTA</div>
+          <div class="card-main-content">
+            <div class="card-huge-icon">🎲</div>
+            <div class="card-headings">
+              <h2>Examen 5+5</h2>
+              <p>5 aves y 5 plantas al azar. Diez especies por ronda, cada vez distintas.</p>
+            </div>
+          </div>
+          <div class="card-action-bar">
+            <span>Empezar prueba</span>
+            <span class="action-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- TARJETA 2: MODO ESTUDIO (VERDE ESMERALDA) -->
+        <div class="mode-card card-study" onclick="goToMode('study')">
+          <div class="card-top-tag">CONSULTA Y MEMORIZACIÓN</div>
+          <div class="card-main-content">
+            <div class="card-huge-icon">📚</div>
+            <div class="card-headings">
+              <h2>Modo Repaso</h2>
+              <p>Tablas comparativas de especies parecidas, fotos fijas ampliables y claves.</p>
+            </div>
+          </div>
+          <div class="card-action-bar">
+            <span>Ver Tablas de Repaso</span>
+            <span class="action-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- TARJETA 3: JUEGOS -->
+        <div class="mode-card card-game" onclick="goToMode('games')">
+          <div class="card-top-tag">PRACTICA JUGANDO</div>
+          <div class="card-main-content">
+            <div class="card-huge-icon">🧩</div>
+            <div class="card-headings">
+              <h2>Juegos</h2>
+              <p>Une fotos con sus nombres o adivina la especie por su rasgo clave.</p>
+            </div>
+          </div>
+          <div class="card-action-bar">
+            <span>Jugar</span>
+            <span class="action-arrow">➔</span>
+          </div>
+        </div>
+
+        <!-- TARJETA 4: ESTADÍSTICAS -->
+        <div class="mode-card card-stats" onclick="goToMode('stats')">
+          <div class="card-top-tag">TU PROGRESO</div>
+          <div class="card-main-content">
+            <div class="card-huge-icon">📊</div>
+            <div class="card-headings">
+              <h2>Estadísticas</h2>
+              <p>Aciertos por especie, por sección y evolución en el tiempo.</p>
+            </div>
+          </div>
+          <div class="card-action-bar">
+            <span>Ver estadísticas</span>
+            <span class="action-arrow">➔</span>
+          </div>
+        </div>
+
+      </div>
+      
+      <div class="menu-badge-footer">
+        <span id="menuCount"></span>
+      </div>
+    </div>
+
+    <!-- PANTALLA 2: MODO TEST -->
+    <div id="screenQuiz" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="goToMode('menu')">← Menú</button>
+        <span id="sessionProgress" class="session-stat"></span>
+        <span id="scoreDisplay" class="session-stat">✅ 0 &nbsp; ❌ 0</span>
+      </div>
+
+      <div class="progress-bar-bg">
+        <div id="progressBar" class="progress-bar-fill"></div>
+      </div>
+
+      <div class="quiz-filter" id="quizFilter">
+        <button class="active" data-filter="all" onclick="setQuizFilter('all')">📖 Práctica completa</button>
+        <button data-filter="bird" onclick="setQuizFilter('bird')">🦅 Aves</button>
+        <button data-filter="plant" onclick="setQuizFilter('plant')">🌿 Árboles y arbustos</button>
+      </div>
+
+      <div id="quizScreen">
+        <div style="text-align: center;"><div id="modeBadge" class="type-pill">Cargando...</div></div>
+        
+        <div class="img-box">
+          <img id="photo" class="quiz-img" src="" alt="Cargando foto..." onclick="zoomQuizPhoto()" style="cursor: zoom-in;">
+        </div>
+        <div id="counter" class="photo-counter"></div>
+
+        <div class="input-container">
+          <input type="text" id="answer" class="input-text" placeholder="Escribe el nombre en alemán..." autocomplete="off" autocorrect="off" autocapitalize="none">
+          <button id="btnCheck" class="btn-primary" onclick="checkAnswer()">OK</button>
+        </div>
+
+        <div id="pistaBox" class="hint-box" style="display: none;"></div>
+        <div id="feedback"></div>
+        <div id="hint" class="hint-box"></div>
+
+        <div class="btn-action-row">
+          <button id="btnHint" class="btn-secondary" onclick="showHint()">💡 Pista</button>
+          <button id="btnMorePhoto" class="btn-secondary" onclick="showNextPhotoOfSameSpecies()">🔄 Otra foto</button>
+          <button id="btnNextSpecies" class="btn-primary" onclick="nextQuestion()">Siguiente →</button>
+        </div>
+      </div>
+
+      <div id="summaryScreen" style="display: none; text-align: center; padding: 20px 0;">
+        <h2 id="summaryTitle" style="font-size: 22px; margin-bottom: 8px;">🎉 ¡Sesión completada!</h2>
+        <p id="summaryStats" style="font-size: 15px; color: #475569; margin: 16px 0; line-height: 1.5;"></p>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 24px;">
+          <button id="btnReviewMistakes" class="btn-primary" style="background: #d97706;" onclick="startMistakesSession()">🔁 Repasar solo falladas</button>
+          <button id="btnNewRound" class="btn-primary" onclick="startFullSession()">🔄 Nueva ronda</button>
+          <button class="btn-secondary" onclick="resetProgress()">🗑 Borrar historial guardado</button>
+          <button class="btn-secondary" onclick="goToMode('menu')">← Volver al Menú</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 3: MODO ESTUDIO -->
+    <div id="screenStudy" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="goToMode('menu')">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">📚 Repaso Comparativo</strong>
+        <span style="width: 60px;"></span>
+      </div>
+      <p style="font-size: 13px; color: #64748b; margin: 4px 0 16px 0; line-height: 1.4;">
+        Toca cualquier foto para <strong>ampliarla a pantalla completa</strong> y estudiar el rasgo morfológico clave.
+      </p>
+      <div id="studyChooser">
+        <button class="study-choice choice-bird" onclick="renderStudySection('bird')">
+          <span class="choice-icon">🦅</span>
+          <span class="choice-text">
+            <strong>Aves</strong>
+            <small id="choiceBirdCount"></small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+        <button class="study-choice choice-plant" onclick="renderStudySection('plant')">
+          <span class="choice-icon">🌿</span>
+          <span class="choice-text">
+            <strong>Árboles y arbustos</strong>
+            <small id="choicePlantCount"></small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+      </div>
+      <div id="studyContent" style="display: none;"></div>
+    </div>
+
+    <!-- PANTALLA 5: ESTADÍSTICAS -->
+    <div id="screenStats" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="goToMode('menu')">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">📊 Estadísticas</strong>
+        <span style="width: 60px;"></span>
+      </div>
+      <div id="statsContent"></div>
+    </div>
+
+    <!-- PANTALLA 4: JUEGOS -->
+    <div id="screenGames" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="goToMode('menu')">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">🧩 Juegos</strong>
+        <span style="width: 60px;"></span>
+      </div>
+      <div id="gameChooser">
+        <button class="study-choice choice-match" onclick="startGame('match')">
+          <span class="choice-icon">🧩</span>
+          <span class="choice-text">
+            <strong>En pareja</strong>
+            <small>Empareja 6 fotos con sus nombres</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+        <button class="study-choice choice-who" onclick="startGame('who')">
+          <span class="choice-icon">❓</span>
+          <span class="choice-text">
+            <strong>¿Quién es?</strong>
+            <small>Adivina la especie por su rasgo clave</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+      </div>
+      <div id="gameContent" style="display: none;">
+        <button class="btn-back study-back" onclick="showGamesChooser()">← Juegos</button>
+        <div class="quiz-filter" id="gameFilter">
+          <button class="active" data-filter="all" onclick="setGameFilter('all')">Todas</button>
+          <button data-filter="bird" onclick="setGameFilter('bird')">🦅 Aves</button>
+          <button data-filter="plant" onclick="setGameFilter('plant')">🌿 Árboles y arbustos</button>
+        </div>
+        <div id="gameArea"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal Lightbox -->
+  <div id="imageModal" class="modal" onclick="closeModal()">
+    <div class="modal-close" onclick="closeModal()">&times;</div>
+    <img id="modalImg" class="modal-content" src="" alt="Zoom">
+    <div id="modalCaption" class="modal-caption"></div>
+  </div>
+
+  <script>
+    // Tema elegido en index.html (?tema=aves-y-plantas). Primero se cargan sus datos y luego el resto de la app
+    const TOPIC_ID = new URLSearchParams(location.search).get("tema") || "aves-y-plantas";
+    const TOPIC_TITLES = {
+      "aves-y-plantas": "Aves y plantas 🦅🌿",
+      "cuerpo-humano": "Cuerpo humano 🫀"
+    };
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error("No se pudo cargar " + src));
+        document.body.appendChild(s);
+      });
+    }
+
+    function initApp() {
+      document.querySelector(".menu-header h1").textContent = TOPIC_TITLES[TOPIC_ID];
+      document.title = `Estudio · ${TOPIC_TITLES[TOPIC_ID]}`;
+
+      // Conteos calculados desde los datos, para que no se queden desactualizados
+      const totalSpecies = speciesList.length;
+    const totalBirds = speciesList.filter(s => s.type === "bird").length;
+    const totalPlants = speciesList.filter(s => s.type === "plant").length;
+    document.getElementById("menuCount").textContent = `${totalSpecies} especies disponibles (${totalBirds} aves y ${totalPlants} plantas)`;
+    document.getElementById("sessionProgress").textContent = `Especie 1 / ${totalSpecies}`;
+    document.getElementById("btnNewRound").textContent = `🔄 Nueva ronda (las ${totalSpecies})`;
+    document.getElementById("choiceBirdCount").textContent = `${totalBirds} especies`;
+    document.getElementById("choicePlantCount").textContent = `${totalPlants} especies`;
+    }
+
+    function goToMode(mode) {
+      document.getElementById("screenMenu").style.display = "none";
+      document.getElementById("screenQuiz").style.display = "none";
+      document.getElementById("screenStudy").style.display = "none";
+      document.getElementById("screenGames").style.display = "none";
+      document.getElementById("screenStats").style.display = "none";
+
+      if (mode === "quiz") {
+        document.getElementById("screenQuiz").style.display = "block";
+        if (quizFilter === "mix") setQuizFilter("all");
+        else if (sessionDeck.length === 0 || deckIndex === -1) startFullSession();
+      } else if (mode === "exam5") {
+        document.getElementById("screenQuiz").style.display = "block";
+        if (quizFilter !== "mix" || deckIndex === -1) setQuizFilter("mix");
+      } else if (mode === "study") {
+        document.getElementById("screenStudy").style.display = "block";
+        showStudyChooser();
+      } else if (mode === "games") {
+        document.getElementById("screenGames").style.display = "block";
+        showGamesChooser();
+      } else if (mode === "stats") {
+        document.getElementById("screenStats").style.display = "block";
+        renderStats();
+      } else {
+        document.getElementById("screenMenu").style.display = "block";
+      }
+    }
+
+    loadScript(`temas/${TOPIC_ID}/data.js`)
+      .then(() => loadScript("test.js?v=3"))
+      .then(() => loadScript("study.js?v=3"))
+      .then(() => loadScript("games.js?v=3"))
+      .then(() => loadScript("stats.js?v=3"))
+      .then(initApp)
+      .catch(() => {
+        // Tema sin datos todavía: se oculta el menú y se muestra solo el aviso
+        document.getElementById("screenMenu").style.display = "none";
+        document.querySelector(".card").insertAdjacentHTML("afterbegin", `
+          <div class="menu-header">
+            <h1>${TOPIC_TITLES[TOPIC_ID] || "Tema"}</h1>
+            <p>Este tema todavía no está disponible.</p>
+          </div>
+          <a href="index.html" class="btn-back" style="display: inline-block; text-decoration: none;">← Temas</a>
+        `);
+      });
+  </script>
+</body>
+</html>
