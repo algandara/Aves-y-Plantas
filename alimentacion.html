@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="referrer" content="no-referrer">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Estudio">
+  <title>Estudio · Alimentación infantil</title>
+  <link rel="stylesheet" href="css/styles.css?v=3">
+  <link rel="stylesheet" href="css/desktop.css?v=3">
+  <link rel="stylesheet" href="temas/alimentacion/alimentacion.css?v=7">
+</head>
+<body>
+  <div class="card">
+
+    <!-- MENÚ DEL TEMA -->
+    <div id="foodMenu">
+      <div class="menu-header">
+        <a href="index.html" class="btn-back" style="display: inline-block; margin-bottom: 12px; text-decoration: none;">← Temas</a>
+        <h1>Alimentación infantil 🥗</h1>
+        <p>Plan semanal de una Kita, en alemán</p>
+      </div>
+
+      <div id="foodChooser">
+        <button class="study-choice choice-learn" onclick="startFoodGame('aprender')">
+          <span class="choice-icon">📖</span>
+          <span class="choice-text">
+            <strong>Aprender</strong>
+            <small>Pirámide y checklist de la semana</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+        <button class="study-choice choice-classify" onclick="startFoodGame('clasificar')">
+          <span class="choice-icon">🔺</span>
+          <span class="choice-text">
+            <strong>Clasificar alimentos</strong>
+            <small>¿A qué grupo de la pirámide pertenece?</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+        <button class="study-choice choice-freq" onclick="startFoodGame('frecuencia')">
+          <span class="choice-icon">📅</span>
+          <span class="choice-text">
+            <strong>¿Con qué frecuencia?</strong>
+            <small>Cada cuánto conviene servir cada alimento</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>        <button class="study-choice choice-exam" onclick="startFoodGame('examen')">
+          <span class="choice-icon">📝</span>
+          <span class="choice-text">
+            <strong>Examen semanal</strong>
+            <small>Encuentra los fallos del plan y propón soluciones</small>
+          </span>
+          <span class="choice-arrow">➔</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- APRENDER -->
+    <div id="foodAprender" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="showFoodMenu()">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">📖 Aprender</strong>
+        <span style="width: 60px;"></span>
+      </div>
+      <div id="learnArea"></div>
+    </div>
+
+    <!-- CLASIFICAR -->
+    <div id="foodClasificar" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="showFoodMenu()">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">🔺 Clasificar alimentos</strong>
+        <button class="btn-secondary" style="padding: 6px 10px;" onclick="startClassify()">🔄</button>
+      </div>
+      <div id="classifyArea"></div>
+    </div>
+
+    <!-- FRECUENCIA -->
+    <div id="foodFrecuencia" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="showFoodMenu()">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">📅 ¿Con qué frecuencia?</strong>
+        <span style="width: 60px;"></span>
+      </div>
+      <div id="freqArea"></div>
+    </div>
+    <!-- EXAMEN -->
+    <div id="foodExamen" style="display: none;">
+      <div class="nav-header">
+        <button class="btn-back" onclick="showFoodMenu()">← Menú</button>
+        <strong style="color:#0f172a; font-size:15px;">📝 Examen semanal</strong>
+        <span style="width: 60px;"></span>
+      </div>
+      <div id="examArea"></div>
+    </div>
+
+  </div>
+
+  <script src="js/utils.js?v=1"></script>
+  <script src="temas/alimentacion/data.js?v=10"></script>
+  <script src="temas/alimentacion/alimentacion.js?v=8"></script>
+</body>
+</html>
