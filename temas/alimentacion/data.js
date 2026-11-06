@@ -179,433 +179,225 @@ const FOOD_ITEMS = [
   { de: "Fencheltee", es: "infusión de hinojo", g: "getraenke" }
 ];
 
-// =====================================================================
-// CATÁLOGO DE PLATOS (≈900). Se genera combinando ingredientes y preparaciones.
-// Cada plato tiene un "slot" (main, carb, raw o dessert) y los datos que usa
-// la comprobación de reglas.
-// =====================================================================
+// ----- Menú: platos sencillos, tres casillas por día (Vorspeise, Mittagessen, Nachspeise) -----
+// al = alérgenos con las letras de FOOD_LEGEND (como en el Speisenplan).
+// Vorspeise: raw = verdura cruda o ensalada (R6).
+// Mittagessen: kind = "veg" | "meat" | "fish"; leg = legumbres (R7); carb = guarnición del plato (R8a, R8b, R8c) o null.
+// Nachspeise: fruit = fruta fresca (R5).
 
-// ----- Principales vegetarianos: base × método -----
-const VEG_BASES = {
-  "Linsen": { es: "lentejas", leg: true },
-  "Kichererbsen": { es: "garbanzos", leg: true },
-  "Bohnen": { es: "judías", leg: true },
-  "Kidneybohnen": { es: "alubias rojas", leg: true },
-  "Erbsen": { es: "guisantes", leg: true },
-  "Dicke Bohnen": { es: "habas", leg: true },
-  "Weiße Bohnen": { es: "alubias blancas", leg: true },
-  "Tofu": { es: "tofu", leg: true },
-  "Gemüse": { es: "verduras", leg: false },
-  "Kürbis": { es: "calabaza", leg: false },
-  "Spinat": { es: "espinacas", leg: false },
-  "Zucchini": { es: "calabacín", leg: false },
-  "Karotten": { es: "zanahorias", leg: false },
-  "Paprika": { es: "pimiento", leg: false },
-  "Brokkoli": { es: "brócoli", leg: false },
-  "Blumenkohl": { es: "coliflor", leg: false },
-  "Tomaten": { es: "tomate", leg: false },
-  "Pilz": { es: "setas", leg: false },
-  "Käse": { es: "queso", leg: false },
-  "Lauch": { es: "puerro", leg: false },
-  "Kohlrabi": { es: "colinabo", leg: false },
-  "Aubergine": { es: "berenjena", leg: false },
-  "Spargel": { es: "espárragos", leg: false },
-  "Mais": { es: "maíz", leg: false },
-  "Fenchel": { es: "hinojo", leg: false },
-  "Rote-Bete": { es: "remolacha", leg: false },
-  "Ei": { es: "huevo", leg: false },
-  "Feta": { es: "feta", leg: false },
-  "Sellerie": { es: "apio", leg: false },
-  "Wirsing": { es: "col rizada", leg: false }
-};
-
-const VEG_METHODS = [
-  { m: "Curry", es: "curry de", bases: ["Linsen", "Kichererbsen", "Bohnen", "Kidneybohnen", "Erbsen", "Tofu", "Gemüse", "Kürbis", "Spinat", "Blumenkohl", "Brokkoli", "Zucchini", "Karotten", "Mais", "Aubergine", "Ei"] },
-  { m: "Bolognese", es: "boloñesa de", bases: ["Linsen", "Kidneybohnen", "Tofu", "Gemüse", "Pilz", "Zucchini", "Karotten", "Lauch", "Sellerie"] },
-  { m: "Eintopf", es: "guiso de", bases: ["Linsen", "Bohnen", "Erbsen", "Dicke Bohnen", "Weiße Bohnen", "Gemüse", "Kürbis", "Kohlrabi", "Lauch", "Karotten", "Wirsing", "Sellerie"] },
-  { m: "Auflauf", es: "gratinado de", bases: ["Gemüse", "Brokkoli", "Blumenkohl", "Spinat", "Zucchini", "Lauch", "Spargel", "Kürbis", "Aubergine", "Fenchel", "Kohlrabi", "Tomaten", "Wirsing", "Sellerie"] },
-  { m: "Pfanne", es: "salteado de", bases: ["Gemüse", "Pilz", "Paprika", "Zucchini", "Brokkoli", "Spinat", "Kichererbsen", "Mais", "Karotten", "Tomaten", "Aubergine", "Tofu", "Ei"] },
-  { m: "Frikadellen", es: "hamburguesas de", bases: ["Linsen", "Kichererbsen", "Bohnen", "Erbsen", "Zucchini", "Karotten", "Spinat", "Kürbis", "Rote-Bete", "Tofu", "Feta"] },
-  { m: "Burger", es: "burger de", bases: ["Linsen", "Kichererbsen", "Bohnen", "Zucchini", "Karotten", "Rote-Bete", "Pilz", "Spinat", "Mais", "Tofu"] },
-  { m: "Suppe", es: "sopa de", bases: ["Linsen", "Erbsen", "Kürbis", "Karotten", "Lauch", "Brokkoli", "Blumenkohl", "Tomaten", "Spinat", "Kohlrabi", "Gemüse", "Fenchel", "Pilz", "Sellerie"] },
-  { m: "Gratin", es: "gratinado de", bases: ["Brokkoli", "Blumenkohl", "Spinat", "Lauch", "Spargel", "Kürbis", "Zucchini", "Aubergine", "Fenchel", "Tomaten", "Wirsing"] },
-  { m: "Ragout", es: "ragú de", bases: ["Pilz", "Gemüse", "Linsen", "Kichererbsen", "Bohnen", "Kürbis", "Blumenkohl", "Brokkoli", "Erbsen", "Tofu"] },
-  { m: "Risotto", es: "risotto de", bases: ["Pilz", "Spargel", "Kürbis", "Spinat", "Erbsen", "Zucchini", "Brokkoli", "Tomaten", "Lauch", "Fenchel", "Rote-Bete", "Gemüse", "Sellerie"] },
-  { m: "Lasagne", es: "lasaña de", bases: ["Gemüse", "Spinat", "Zucchini", "Pilz", "Kürbis", "Aubergine", "Brokkoli", "Linsen", "Lauch", "Wirsing"] },
-  { m: "Quiche", es: "quiche de", bases: ["Lauch", "Spinat", "Brokkoli", "Zucchini", "Pilz", "Tomaten", "Spargel", "Kürbis", "Mais", "Gemüse", "Feta", "Wirsing"] },
-  { m: "Omelett", es: "tortilla de", bases: ["Pilz", "Spinat", "Paprika", "Tomaten", "Zucchini", "Lauch", "Brokkoli", "Spargel", "Feta", "Kohlrabi"] },
-  { m: "Strudel", es: "strudel de", bases: ["Spinat", "Lauch", "Pilz", "Zucchini", "Kürbis", "Brokkoli", "Spargel", "Gemüse", "Feta", "Mais"] },
-  { m: "Bratlinge", es: "buñuelos de", bases: ["Linsen", "Kichererbsen", "Bohnen", "Erbsen", "Karotten", "Zucchini", "Rote-Bete", "Spinat", "Kürbis", "Tofu"] },
-  { m: "Pizza", es: "pizza de", bases: ["Tomaten", "Paprika", "Pilz", "Spinat", "Mais", "Zucchini", "Brokkoli", "Feta", "Gemüse", "Spargel", "Lauch"] },
-  { m: "Wrap", es: "wrap de", bases: ["Kichererbsen", "Linsen", "Bohnen", "Gemüse", "Paprika", "Spinat", "Zucchini", "Mais", "Feta", "Tofu"] },
-  { m: "Chili", es: "chili de", bases: ["Kidneybohnen", "Bohnen", "Linsen", "Mais", "Paprika", "Kürbis", "Zucchini", "Tomaten", "Tofu"] },
-  { m: "Dal", es: "dal de", bases: ["Linsen", "Kichererbsen", "Erbsen", "Dicke Bohnen", "Spinat", "Karotten", "Kürbis", "Blumenkohl"] },
-  { m: "Puffer", es: "tortitas de", bases: ["Zucchini", "Karotten", "Lauch", "Brokkoli", "Kohlrabi", "Rote-Bete", "Spinat", "Mais", "Pilz", "Sellerie"] },
-  { m: "Pastete", es: "paté de", bases: ["Linsen", "Kichererbsen", "Pilz", "Bohnen", "Erbsen", "Tofu"] },
-  { m: "Muffins", es: "muffins de", bases: ["Gemüse", "Zucchini", "Karotten", "Spinat", "Mais", "Lauch", "Kürbis", "Tomaten", "Feta", "Paprika"] },
-  { m: "Tortilla", es: "tortilla de", bases: ["Spinat", "Zucchini", "Paprika", "Pilz", "Brokkoli", "Lauch", "Tomaten", "Feta", "Sellerie"] },
-  { m: "Schnitzel", es: "escalope de", bases: ["Blumenkohl", "Aubergine", "Zucchini", "Pilz", "Kohlrabi", "Spargel", "Fenchel", "Tofu", "Kürbis"] }
+// Leyenda de alérgenos (la misma del Speisenplan)
+const FOOD_LEGEND = [
+  ["A", "Glutenhaltiges Getreide"],
+  ["B", "Krebstiere"],
+  ["C", "Eier"],
+  ["D", "Fisch"],
+  ["E", "Erdnüsse"],
+  ["F", "Soja"],
+  ["G", "Milch"],
+  ["H", "Schalenfrüchte"],
+  ["I", "Sellerie"],
+  ["J", "Senf"],
+  ["K", "Sesam"],
+  ["L", "Schwefeldioxid/Sulfite"],
+  ["M", "Lupinen"],
+  ["N", "Weichtiere"]
 ];
 
-const VEG_MAINS = [];
-VEG_METHODS.forEach(meth => {
-  meth.bases.forEach(b => {
-    const base = VEG_BASES[b];
-    VEG_MAINS.push({ de: `${b}-${meth.m}`, es: `${meth.es} ${base.es}`, slot: "main", kind: "veg", leg: base.leg });
-  });
-});
-
-// ----- Principales de carne y pescado (nombre alemán, nombre español) -----
-const MEAT_LIST = [
-  ["Hähnchenschnitzel", "escalope de pollo"],
-  ["Putenschnitzel", "escalope de pavo"],
-  ["Schweineschnitzel", "escalope de cerdo"],
-  ["Hähnchengeschnetzeltes", "pollo salteado en tiras"],
-  ["Putengeschnetzeltes", "pavo salteado en tiras"],
-  ["Rindergeschnetzeltes", "ternera salteada en tiras"],
-  ["Schweinegeschnetzeltes", "cerdo salteado en tiras"],
-  ["Hähnchenspieß", "pincho de pollo"],
-  ["Putenspieß", "pincho de pavo"],
-  ["Schweinespieß", "pincho de cerdo"],
-  ["Rinderspieß", "pincho de ternera"],
-  ["Hähnchenbraten", "asado de pollo"],
-  ["Putenbraten", "asado de pavo"],
-  ["Rinderbraten", "asado de ternera"],
-  ["Schweinebraten", "asado de cerdo"],
-  ["Rindergulasch", "estofado de ternera"],
-  ["Schweinegulasch", "estofado de cerdo"],
-  ["Putengulasch", "estofado de pavo"],
-  ["Hähnchencurry", "curry de pollo"],
-  ["Putencurry", "curry de pavo"],
-  ["Hähnchenragout", "ragú de pollo"],
-  ["Rinderragout", "ragú de ternera"],
-  ["Schweineragout", "ragú de cerdo"],
-  ["Hähnchen-Gyros", "gyros de pollo"],
-  ["Schweine-Gyros", "gyros de cerdo"],
-  ["Rinderröllchen", "rollitos de ternera"],
-  ["Hähnchenröllchen", "rollitos de pollo"],
-  ["Schweinröllchen", "rollitos de cerdo"],
-  ["Hähnchensuppe", "sopa de pollo"],
-  ["Rindersuppe", "sopa de ternera"],
-  ["Putensuppe", "sopa de pavo"],
-  ["Frikadellen", "hamburguesas de carne"],
-  ["Hackbraten", "pastel de carne picada"],
-  ["Hack-Bolognese", "boloñesa de carne picada"],
-  ["Hack-Eintopf", "guiso de carne picada"],
-  ["Hack-Auflauf", "gratinado de carne picada"],
-  ["Hack-Pfanne", "salteado de carne picada"],
-  ["Hack-Lasagne", "lasaña de carne picada"],
-  ["Hack-Chili", "chili de carne picada"],
-  ["Hack-Klößchen", "albóndigas de carne picada"],
-  ["Hackfleisch-Burger", "burger de carne picada"],
-  ["Hähnchen-Burger", "burger de pollo"],
-  ["Putenfrikadellen", "hamburguesas de pavo"],
-  ["Hähnchen-Wraps", "wraps de pollo"]
-];
-
-const FISH_LIST = [
-  ["Fischstäbchen", "palitos de pescado"],
-  ["Fischfrikadellen", "hamburguesas de pescado"],
-  ["Lachsfilet", "filete de salmón"],
-  ["Forellenfilet", "filete de trucha"],
-  ["Pangasiusfilet", "filete de pangasio"],
-  ["Kabeljaufilet", "filete de bacalao"],
-  ["Schollenfilet", "filete de platija"],
-  ["Zanderfilet", "filete de lucioperca"],
-  ["Seelachsfilet", "filete de abadejo"],
-  ["Seelachs in Kräutersoße", "abadejo con salsa de hierbas"],
-  ["Lachs-Auflauf", "gratinado de salmón"],
-  ["Seelachs-Auflauf", "gratinado de abadejo"],
-  ["Kabeljau-Auflauf", "gratinado de bacalao"],
-  ["Pangasius-Auflauf", "gratinado de pangasio"],
-  ["Thunfisch-Auflauf", "gratinado de atún"],
-  ["Lachspfanne", "salteado de salmón"],
-  ["Pangasiuspfanne", "salteado de pangasio"],
-  ["Forellenpfanne", "salteado de trucha"],
-  ["Zanderpfanne", "salteado de lucioperca"],
-  ["Lachsburger", "burger de salmón"],
-  ["Seelachsburger", "burger de abadejo"],
-  ["Thunfischburger", "burger de atún"],
-  ["Seelachs-Eintopf", "guiso de abadejo"],
-  ["Kabeljau-Eintopf", "guiso de bacalao"],
-  ["Pangasius-Eintopf", "guiso de pangasio"],
-  ["Pangasius-Curry", "curry de pangasio"],
-  ["Lachs-Curry", "curry de salmón"],
-  ["Kabeljau-Curry", "curry de bacalao"],
-  ["Seelachs-Ragout", "ragú de abadejo"],
-  ["Kabeljau-Ragout", "ragú de bacalao"],
-  ["Scholle-Ragout", "ragú de platija"],
-  ["Lachsspieß", "pincho de salmón"],
-  ["Thunfischspieß", "pincho de atún"],
-  ["Forellenspieß", "pincho de trucha"],
-  ["Lachs-Lasagne", "lasaña de salmón"],
-  ["Thunfisch-Lasagne", "lasaña de atún"],
-  ["Seelachs-Lasagne", "lasaña de abadejo"],
-  ["Fischsuppe", "sopa de pescado"],
-  ["Fischeintopf mit Gemüse", "guiso de pescado con verduras"]
-];
-
-// ----- Guarniciones (cereal o patata). type = familia; fresh y vollkorn son las comprobaciones -----
-const POTATO_TOPPINGS = [["mit Kräuterquark", "con requesón de hierbas"], ["mit Butter", "con mantequilla"], ["mit Joghurt-Dip", "con salsa de yogur"]];
-const SOBRE_TOPPINGS = [["mit Butter", "con mantequilla"], ["mit Soße", "con salsa"]];
-const PASTA_TOPPINGS = [["mit Tomatensoße", "con salsa de tomate"], ["mit Pesto", "con pesto"], ["mit Käse", "con queso"], ["mit Gemüsesoße", "con salsa de verduras"]];
-const BREAD_TOPPINGS = [["mit Frischkäse", "con queso fresco"], ["mit Butter", "con mantequilla"], ["mit Käse", "con queso"], ["mit Gurke", "con pepino"]];
-
-const CARB_GROUPS = [
-  { type: "kart_frisch", fresh: true, vollkorn: false, toppings: POTATO_TOPPINGS, bases: [
-    ["Salzkartoffeln", "patatas cocidas"], ["Ofenkartoffeln", "patatas al horno"], ["Pellkartoffeln", "patatas con piel"],
-    ["Bratkartoffeln", "patatas salteadas"], ["Kartoffelbrei (frisch)", "puré de patata fresco"], ["Kartoffelwedges", "gajos de patata"],
-    ["Kartoffelecken", "gajos de patata al horno"], ["Dillkartoffeln", "patatas con eneldo"], ["Petersilienkartoffeln", "patatas con perejil"],
-    ["Rösti", "rösti (tortita de patata)"], ["Kartoffelgratin", "gratén de patata"], ["Kartoffelstampf", "puré de patata rústico"]
-  ] },
-  { type: "kart_sobre", fresh: false, vollkorn: false, toppings: SOBRE_TOPPINGS, bases: [
-    ["Kartoffelpüree aus Flocken", "puré de patata de copos"], ["Kartoffelpüree aus Pulver", "puré de patata en polvo"],
-    ["Kartoffelpüree aus dem Beutel", "puré de patata de sobre"], ["Kartoffelklöße (Fertigprodukt)", "bolas de patata precocinadas"],
-    ["Kartoffelchips", "patatas chips"]
-  ] },
-  { type: "reis", fresh: false, vollkorn: false, toppings: PASTA_TOPPINGS, bases: [
-    ["Reis", "arroz"], ["Basmatireis", "arroz basmati"], ["Jasminreis", "arroz jazmín"], ["Risottoreis", "arroz para risotto"],
-    ["Reisnudeln", "fideos de arroz"], ["Paella-Reis", "arroz para paella"], ["Kräuterreis", "arroz con hierbas"],
-    ["Gemüsereis", "arroz con verduras"], ["Kokosreis", "arroz con coco"]
-  ] },
-  { type: "nudeln", fresh: false, vollkorn: false, toppings: PASTA_TOPPINGS, bases: [
-    ["Nudeln", "pasta"], ["Spaghetti", "espaguetis"], ["Penne", "penne"], ["Fusilli", "fusilli"], ["Farfalle", "farfalle"],
-    ["Tagliatelle", "tagliatelle"], ["Makkaroni", "macarrones"], ["Spirelli", "espirales"], ["Hörnchen", "macarrones (codos)"], ["Spätzle", "spätzle"]
-  ] },
-  { type: "vollnudeln", fresh: false, vollkorn: true, toppings: PASTA_TOPPINGS, bases: [
-    ["Vollkornnudeln", "pasta integral"], ["Vollkornspaghetti", "espaguetis integrales"], ["Vollkornpenne", "penne integrales"],
-    ["Vollkornfusilli", "fusilli integrales"], ["Vollkornhörnchen", "macarrones integrales"], ["Dinkelnudeln", "pasta de espelta"],
-    ["Vollkornspirelli", "espirales integrales"]
-  ] },
-  { type: "brot", fresh: false, vollkorn: false, toppings: BREAD_TOPPINGS, bases: [
-    ["Weißbrot", "pan blanco"], ["Toastbrot", "pan de molde"], ["Baguette", "baguette"], ["Brötchen", "panecillo"],
-    ["Fladenbrot", "pan de pita"], ["Stangenbrot", "barra de pan"]
-  ] },
-  { type: "vollbrot", fresh: false, vollkorn: true, toppings: BREAD_TOPPINGS, bases: [
-    ["Vollkornbrot", "pan integral"], ["Vollkornbrötchen", "panecillo integral"], ["Roggenbrot", "pan de centeno"],
-    ["Dinkelbrot", "pan de espelta"], ["Vollkornfladenbrot", "pan de pita integral"], ["Körnerbrot", "pan de semillas"],
-    ["Vollkorntoast", "pan de molde integral"], ["Vollkornbaguette", "baguette integral"], ["Mehrkornbrot", "pan multicereal"],
-    ["Vollkornwrap", "wrap integral"]
-  ] },
-  { type: "vollreis", fresh: false, vollkorn: true, toppings: PASTA_TOPPINGS, bases: [
-    ["Vollkornreis", "arroz integral"], ["Naturreis", "arroz natural"], ["Braunreis", "arroz moreno"],
-    ["Vollkorn-Couscous", "cuscús integral"], ["Vollkorn-Bulgur", "bulgur integral"]
-  ] }
-];
-
-// ----- Verdura cruda (R6) y verdura cocida -----
-const RAW_BASES = [
-  ["Karottensticks", "bastones de zanahoria"], ["Gurkenscheiben", "rodajas de pepino"], ["Paprikastreifen", "tiras de pimiento"],
-  ["Kohlrabistifte", "bastones de colinabo"], ["Radieschen", "rábanos"], ["Cocktailtomaten", "tomatitos cherry"],
-  ["Rohkostteller", "plato de verdura cruda"], ["Krautsalat", "ensalada de col"], ["Gurkensalat", "ensalada de pepino"],
-  ["Tomatensalat", "ensalada de tomate"], ["Karottensalat", "ensalada de zanahoria"], ["Eisbergsalat", "ensalada de lechuga"],
-  ["Feldsalat", "ensalada de canónigos"], ["Rucola-Salat", "ensalada de rúcula"], ["Rote-Bete-Salat", "ensalada de remolacha"],
-  ["Kohlrabisalat", "ensalada de colinabo"], ["Sellerie-Sticks", "bastones de apio"], ["Blattsalat", "ensalada verde"],
-  ["Bunter Salat", "ensalada variada"], ["Coleslaw", "coleslaw"], ["Chinakohlsalat", "ensalada de col china"],
-  ["Zucchinirohkost", "calabacín crudo"], ["Fenchelsalat", "ensalada de hinojo"], ["Radiesalat", "ensalada de rábanos"],
-  ["Gemischter Salat", "ensalada mixta"]
-];
-const RAW_VARIANTS = [["", ""], [" mit Joghurt-Dressing", " con aliño de yogur"], [" mit Kräuterdip", " con salsa de hierbas"]];
-
-const COOKED_BASES = [
-  ["Karotten", "zanahorias"], ["Erbsen", "guisantes"], ["Grüne Bohnen", "judías verdes"], ["Brokkoli", "brócoli"],
-  ["Blumenkohl", "coliflor"], ["Rosenkohl", "coles de Bruselas"], ["Spinat", "espinacas"], ["Mangold", "acelgas"],
-  ["Kohlrabi", "colinabo"], ["Zucchini", "calabacín"], ["Fenchel", "hinojo"], ["Lauch", "puerro"], ["Rotkohl", "lombarda"],
-  ["Wirsing", "col rizada"], ["Sauerkraut", "chucrut"], ["Grünkohl", "col verde"], ["Spargel", "espárragos"],
-  ["Pilze", "setas"], ["Paprika", "pimiento"], ["Kürbis", "calabaza"], ["Mais", "maíz"], ["Rote Bete", "remolacha"],
-  ["Gemüsemischung", "mezcla de verduras"]
-];
-const COOKED_VARIANTS = [[" (gedünstet)", " (al vapor)"], [" (gekocht)", " (cocidas)"], [" (überbacken)", " (gratinadas)"]];
-
-// ----- Postre: fruta fresca (R5) y postres sin fruta fresca -----
-const FRUIT_BASES = [
-  ["Apfelstücke", "trozos de manzana"], ["Birnenstücke", "trozos de pera"], ["Banane", "plátano"], ["Erdbeeren", "fresas"],
-  ["Weintrauben", "uvas"], ["Orangenspalten", "gajos de naranja"], ["Mandarine", "mandarina"], ["Kiwi", "kiwi"],
-  ["Melone", "melón"], ["Wassermelone", "sandía"], ["Himbeeren", "frambuesas"], ["Heidelbeeren", "arándanos"],
-  ["Pflaumen", "ciruelas"], ["Kirschen", "cerezas"], ["Nektarine", "nectarina"], ["Pfirsich", "melocotón"],
-  ["Ananasstücke", "trozos de piña"], ["Mango", "mango"], ["Granatapfel", "granada"], ["Apfelspalten", "gajos de manzana"],
-  ["Obstsalat", "macedonia"], ["Clementinen", "clementinas"], ["Aprikosen", "albaricoques"], ["Stachelbeeren", "grosellas espinosas"],
-  ["Johannisbeeren", "grosellas"], ["Brombeeren", "moras"], ["Grapefruit", "pomelo"], ["Papaya", "papaya"],
-  ["Apfel-Banane", "manzana y plátano"], ["Trauben-Mix", "mezcla de uvas"], ["Apfelschnitze", "gajos de manzana"],
-  ["Kirsch-Mix", "mezcla de cerezas"], ["Obstspieße", "pinchos de fruta"], ["Birnen", "peras"], ["Äpfel", "manzanas"],
-  ["Apfel-Birne", "manzana y pera"], ["Erdbeer-Banane", "fresa y plátano"], ["Kiwi-Mango", "kiwi y mango"],
-  ["Beeren-Mix", "mezcla de bayas"], ["Orangen-Mix", "mezcla de cítricos"]
-];
-const FRUIT_VARIANTS = [["", ""], [" mit Joghurt", " con yogur"]];
-
-const DESSERT_LIST = [
-  ["Pudding (Vanille)", "pudin de vainilla"], ["Pudding (Schoko)", "pudin de chocolate"], ["Pudding (Erdbeer)", "pudin de fresa"],
-  ["Grießbrei", "sémola con leche"], ["Milchreis", "arroz con leche"], ["Joghurt natur", "yogur natural"],
-  ["Joghurt (Erdbeer)", "yogur de fresa"], ["Joghurt (Vanille)", "yogur de vainilla"], ["Quark mit Honig", "requesón con miel"],
-  ["Obstkompott aus der Dose", "compota de fruta de bote"], ["Obstsalat aus der Dose", "macedonia de bote"],
-  ["Fruchtmus", "puré de fruta"], ["Apfelmus (Glas)", "compota de manzana (tarro)"],
-  ["Kirschkompott (Dose)", "compota de cerezas (bote)"], ["Pfirsichkompott (Dose)", "compota de melocotón (bote)"],
-  ["Ananas aus der Dose", "piña de bote"], ["Mandarinen aus der Dose", "mandarinas de bote"], ["Götterspeise", "gelatina"],
-  ["Pudding mit Sahne", "pudin con nata"], ["Vanilleeis", "helado de vainilla"], ["Schokoladenpudding", "pudin de chocolate"],
-  ["Kekse", "galletas"], ["Kuchen", "bizcocho"], ["Muffin", "muffin"], ["Reiswaffel", "tortita de arroz"],
-  ["Pfannkuchen (süß)", "crepe dulce"], ["Keks mit Milch", "galleta con leche"], ["Zwieback", "biscote"],
-  ["Gelee mit Vanillesauce", "gelatina con salsa de vainilla"]
-];
-
-// ----- Construcción del catálogo -----
-const MAIN_MEAT_DISHES = MEAT_LIST.map(([de, es]) => ({ de, es, slot: "main", kind: "meat", leg: false }));
-const MAIN_FISH_DISHES = FISH_LIST.map(([de, es]) => ({ de, es, slot: "main", kind: "fish", leg: false }));
-
-const CARB_DISHES = [];
-CARB_GROUPS.forEach(g => {
-  g.bases.forEach(([de, es]) => {
-    const base = { slot: "carb", type: g.type, id: g.type, fresh: g.fresh, vollkorn: g.vollkorn };
-    CARB_DISHES.push({ ...base, de, es });
-    g.toppings.forEach(([td, tes]) => CARB_DISHES.push({ ...base, de: `${de} ${td}`, es: `${es} ${tes}` }));
-  });
-});
-
-const RAW_DISHES = [];
-RAW_BASES.forEach(([de, es]) => {
-  RAW_VARIANTS.forEach(([vd, ves]) => RAW_DISHES.push({ de: de + vd, es: es + ves, slot: "raw", raw: true }));
-});
-const COOKED_DISHES = [];
-COOKED_BASES.forEach(([de, es]) => {
-  COOKED_VARIANTS.forEach(([vd, ves]) => COOKED_DISHES.push({ de: de + vd, es: es + ves, slot: "raw", raw: false }));
-});
-
-const FRUIT_DISHES = [];
-FRUIT_BASES.forEach(([de, es]) => {
-  FRUIT_VARIANTS.forEach(([vd, ves]) => FRUIT_DISHES.push({ de: de + vd, es: es + ves, slot: "dessert", fruit: true }));
-});
-const DESSERT_DISHES = DESSERT_LIST.map(([de, es]) => ({ de, es, slot: "dessert", fruit: false }));
-
-// Un mismo nombre alemán solo aparece una vez
-function dedupeDishes(list) {
-  const seen = new Set();
-  return list.filter(d => {
-    if (seen.has(d.de)) return false;
-    seen.add(d.de);
-    return true;
-  });
+function foodDish(course, de, es, al, props) {
+  return Object.assign({ course, de, es, al: al || "" }, props || {});
 }
 
-// Componentes sueltos: principales, guarniciones, verduras y postres
-const FOOD_COMPONENTS = dedupeDishes([
-  ...VEG_MAINS,
-  ...MAIN_MEAT_DISHES,
-  ...MAIN_FISH_DISHES,
-  ...CARB_DISHES,
-  ...RAW_DISHES,
-  ...COOKED_DISHES,
-  ...FRUIT_DISHES,
-  ...DESSERT_DISHES
-]);
+const FOOD_STARTERS = [
+  foodDish("starter", "Rohkost", "Verdura cruda", "", { raw: true }),
+  foodDish("starter", "Bunter Salat", "Ensalada variada", "J", { raw: true }),
+  foodDish("starter", "Krautsalat", "Ensalada de col", "J", { raw: true }),
+  foodDish("starter", "Rohkost mit Quark-Dipp", "Verdura cruda con dip de quark", "G", { raw: true }),
+  foodDish("starter", "Möhrensalat", "Ensalada de zanahoria", "J", { raw: true }),
+  foodDish("starter", "Tomaten-Gurken-Salat", "Ensalada de tomate y pepino", "", { raw: true }),
+  foodDish("starter", "Rohkost mit Joghurt-Dressing", "Verdura cruda con aliño de yogur", "G", { raw: true }),
+  foodDish("starter", "Apfel-Möhren-Salat", "Ensalada de manzana y zanahoria", "G", { raw: true }),
+  foodDish("starter", "Gurkensalat mit Dill", "Ensalada de pepino con eneldo", "", { raw: true }),
+  foodDish("starter", "Rotkohlsalat", "Ensalada de lombarda", "J", { raw: true }),
+  foodDish("starter", "Paprikastreifen mit Hummus", "Tiras de pimiento con hummus", "K", { raw: true }),
+  foodDish("starter", "Rucola-Salat mit Birne", "Ensalada de rúcula con pera", "", { raw: true }),
+  foodDish("starter", "Feldsalat mit Gurke", "Ensalada de canónigos con pepino", "", { raw: true }),
+  foodDish("starter", "Radieschen-Rohkost", "Verdura cruda de rábanos", "", { raw: true }),
+  foodDish("starter", "Selleriesalat mit Apfel", "Ensalada de apio con manzana", "I", { raw: true }),
+  foodDish("starter", "Chinakohlsalat", "Ensalada de col china", "J, K", { raw: true }),
+  foodDish("starter", "Kohlrabi-Rohkost", "Verdura cruda de colirrábano", "", { raw: true }),
+  foodDish("starter", "Gemischter Blattsalat", "Ensalada de hojas variadas", "J", { raw: true }),
+  foodDish("starter", "Tomatensalat mit Basilikum", "Ensalada de tomate con albahaca", "", { raw: true }),
+  foodDish("starter", "Fenchelsalat mit Orange", "Ensalada de hinojo con naranja", "", { raw: true }),
+  foodDish("starter", "Gemüsesuppe", "Sopa de verduras", "", { raw: false }),
+  foodDish("starter", "Kürbissuppe", "Crema de calabaza", "G", { raw: false }),
+  foodDish("starter", "Gedünsteter Brokkoli", "Brócoli al vapor", "", { raw: false }),
+  foodDish("starter", "Gedünstete Karotten", "Zanahorias al vapor", "", { raw: false }),
+  foodDish("starter", "Blumenkohl mit Käsesoße", "Coliflor con salsa de queso", "G", { raw: false }),
+  foodDish("starter", "Erbsensuppe", "Sopa de guisantes", "", { raw: false }),
+  foodDish("starter", "Tomatensuppe", "Sopa de tomate", "G", { raw: false }),
+  foodDish("starter", "Kartoffelsuppe", "Sopa de patata", "G", { raw: false }),
+  foodDish("starter", "Karottensuppe", "Crema de zanahoria", "G", { raw: false }),
+  foodDish("starter", "Spinatpüree", "Puré de espinacas", "G", { raw: false }),
+  foodDish("starter", "Gedünsteter Blumenkohl", "Coliflor al vapor", "", { raw: false }),
+  foodDish("starter", "Gedünsteter Fenchel", "Hinojo al vapor", "", { raw: false }),
+  foodDish("starter", "Ofengemüse", "Verduras al horno", "", { raw: false }),
+  foodDish("starter", "Gedünsteter Lauch", "Puerro al vapor", "", { raw: false }),
+  foodDish("starter", "Gemüsebrühe mit Nudeln", "Caldo de verduras con fideos", "A, I", { raw: false }),
+  foodDish("starter", "Ofenkürbis", "Calabaza al horno", "", { raw: false }),
+  foodDish("starter", "Zucchini-Gemüse", "Calabacín salteado", "", { raw: false })
+];
 
-const FOOD_MAIN_POOL = {
-  veg: FOOD_COMPONENTS.filter(d => d.slot === "main" && d.kind === "veg"),
-  meat: FOOD_COMPONENTS.filter(d => d.slot === "main" && d.kind === "meat"),
-  fish: FOOD_COMPONENTS.filter(d => d.slot === "main" && d.kind === "fish")
-};
-const FOOD_CARB_POOL = FOOD_COMPONENTS.filter(d => d.slot === "carb");
-// Sin aderezo (sin " mit "), para que el nombre del plato sea corto
-const FOOD_CARB_BASE_POOL = FOOD_CARB_POOL.filter(d => !d.de.includes(" mit "));
-const FOOD_RAW_POOL = FOOD_COMPONENTS.filter(d => d.slot === "raw" && d.raw);
-const FOOD_RAW_BASE_POOL = FOOD_RAW_POOL.filter(d => !d.de.includes(" mit "));
-const FOOD_COOKED_POOL = FOOD_COMPONENTS.filter(d => d.slot === "raw" && !d.raw);
-const FOOD_FRUIT_POOL = FOOD_COMPONENTS.filter(d => d.slot === "dessert" && d.fruit);
-const FOOD_DESSERT_POOL = FOOD_COMPONENTS.filter(d => d.slot === "dessert" && !d.fruit);
+// Comidas principales con guarnición (todas llevan cereal o patata)
+const FOOD_MAINS = [
+  foodDish("main", "Vollkornnudeln mit Tomatensoße", "Pasta integral con salsa de tomate", "A", { kind: "veg", leg: false, carb: "vollnudeln" }),
+  foodDish("main", "Nudeln mit Tomatensoße", "Pasta con salsa de tomate", "A", { kind: "veg", leg: false, carb: "nudeln" }),
+  foodDish("main", "Gefüllte Paprika mit Reis", "Pimientos rellenos con arroz", "G", { kind: "veg", leg: false, carb: "reis" }),
+  foodDish("main", "Schupfnudel-Pfanne mit Gemüse", "Salteado de Schupfnudeln con verduras", "A, C", { kind: "veg", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Pizza Margherita", "Pizza margarita", "A, G", { kind: "veg", leg: false, carb: "brot" }),
+  foodDish("main", "Vollkornpizza mit Gemüse", "Pizza integral con verduras", "A, G", { kind: "veg", leg: false, carb: "vollbrot" }),
+  foodDish("main", "Kartoffelecken mit Kräuterquark", "Gajos de patata con requesón de hierbas", "G", { kind: "veg", leg: false, carb: "kart_frisch" }),
+  foodDish("main", "Kartoffelpüree mit Gemüsesoße", "Puré de patata con salsa de verduras", "G", { kind: "veg", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Gemüsepfanne mit Reis", "Salteado de verduras con arroz", "", { kind: "veg", leg: false, carb: "reis" }),
+  foodDish("main", "Vollkornreis mit Gemüse", "Arroz integral con verduras", "", { kind: "veg", leg: false, carb: "vollreis" }),
+  foodDish("main", "Käse-Lauch-Auflauf mit Nudeln", "Gratinado de queso y puerro con pasta", "A, C, G", { kind: "veg", leg: false, carb: "nudeln" }),
+  foodDish("main", "Spinat-Lasagne", "Lasaña de espinacas", "A, C, G", { kind: "veg", leg: false, carb: "nudeln" }),
+  foodDish("main", "Gemüse-Risotto", "Risotto de verduras", "G", { kind: "veg", leg: false, carb: "reis" }),
+  foodDish("main", "Tortellini mit Tomatensoße", "Tortellini con salsa de tomate", "A, C", { kind: "veg", leg: false, carb: "nudeln" }),
+  foodDish("main", "Vollkornspaghetti mit Pesto", "Espaguetis integrales con pesto", "A, G, H", { kind: "veg", leg: false, carb: "vollnudeln" }),
+  foodDish("main", "Reispfanne mit Paprika", "Salteado de arroz con pimiento", "", { kind: "veg", leg: false, carb: "reis" }),
+  foodDish("main", "Bunter Reis mit Gemüse", "Arroz de colores con verduras", "", { kind: "veg", leg: false, carb: "reis" }),
+  foodDish("main", "Kartoffelbrei mit Spinat", "Puré de patata con espinacas", "G", { kind: "veg", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Ofenkartoffeln mit Quark", "Patatas al horno con quark", "G", { kind: "veg", leg: false, carb: "kart_frisch" }),
+  foodDish("main", "Pellkartoffeln mit Kräuterquark", "Patatas con piel y requesón de hierbas", "G", { kind: "veg", leg: false, carb: "kart_frisch" }),
+  foodDish("main", "Kartoffel-Gemüse-Eintopf", "Guiso de patata y verduras", "", { kind: "veg", leg: false, carb: "kart_frisch" }),
+  foodDish("main", "Vollkornnudeln mit Pilzsoße", "Pasta integral con salsa de champiñones", "A, G", { kind: "veg", leg: false, carb: "vollnudeln" }),
+  foodDish("main", "Gnocchi mit Tomatensoße", "Ñoquis con salsa de tomate", "A, C", { kind: "veg", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Rösti mit Apfelmus", "Röstis con compota de manzana", "", { kind: "veg", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Pita mit Gemüsefüllung", "Pan pita relleno de verduras", "A", { kind: "veg", leg: false, carb: "brot" }),
+  foodDish("main", "Linsen-Curry mit Reis", "Curry de lentejas con arroz", "", { kind: "veg", leg: true, carb: "reis" }),
+  foodDish("main", "Kichererbsen-Curry mit Vollkornreis", "Curry de garbanzos con arroz integral", "", { kind: "veg", leg: true, carb: "vollreis" }),
+  foodDish("main", "Bohnen-Chili mit Vollkornreis", "Chili de alubias con arroz integral", "", { kind: "veg", leg: true, carb: "vollreis" }),
+  foodDish("main", "Linseneintopf mit Kartoffeln", "Potaje de lentejas con patatas", "", { kind: "veg", leg: true, carb: "kart_frisch" }),
+  foodDish("main", "Erbseneintopf mit frischen Kartoffeln", "Guiso de guisantes con patatas frescas", "", { kind: "veg", leg: true, carb: "kart_frisch" }),
+  foodDish("main", "Bohnen-Gemüse-Pfanne mit Reis", "Salteado de judías verdes con arroz", "", { kind: "veg", leg: true, carb: "reis" }),
+  foodDish("main", "Linsen-Bolognese mit Nudeln", "Boloñesa de lentejas con pasta", "A", { kind: "veg", leg: true, carb: "nudeln" }),
+  foodDish("main", "Kichererbsen-Gemüse mit Vollkornnudeln", "Garbanzos con verduras y pasta integral", "A", { kind: "veg", leg: true, carb: "vollnudeln" }),
+  foodDish("main", "Erbsen-Kartoffel-Eintopf", "Guiso de guisantes y patata", "", { kind: "veg", leg: true, carb: "kart_frisch" }),
+  foodDish("main", "Tofu-Gemüse-Pfanne mit Reis", "Salteado de tofu y verduras con arroz", "F", { kind: "veg", leg: true, carb: "reis" }),
+  foodDish("main", "Hähnchen-Nuggets mit Kartoffelpüree", "Nuggets de pollo con puré de patata", "A, G", { kind: "meat", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Frikadellen mit Kartoffelecken", "Hamburguesas con gajos de patata", "A, C", { kind: "meat", leg: false, carb: "kart_frisch" }),
+  foodDish("main", "Hackbällchen mit Nudeln", "Albóndigas con pasta", "A, C", { kind: "meat", leg: false, carb: "nudeln" }),
+  foodDish("main", "Hack-Lasagne", "Lasaña de carne picada", "A, C, G", { kind: "meat", leg: false, carb: "nudeln" }),
+  foodDish("main", "Putenschnitzel mit Vollkornnudeln", "Escalope de pavo con pasta integral", "A, C", { kind: "meat", leg: false, carb: "vollnudeln" }),
+  foodDish("main", "Rindergulasch mit Reis", "Gulasch de ternera con arroz", "", { kind: "meat", leg: false, carb: "reis" }),
+  foodDish("main", "Hähnchenbrust mit Vollkornreis", "Pechuga de pollo con arroz integral", "", { kind: "meat", leg: false, carb: "vollreis" }),
+  foodDish("main", "Hähnchen-Geschnetzeltes mit Reis", "Pollo en tiras con arroz", "G", { kind: "meat", leg: false, carb: "reis" }),
+  foodDish("main", "Putenbolognese mit Vollkornnudeln", "Boloñesa de pavo con pasta integral", "A", { kind: "meat", leg: false, carb: "vollnudeln" }),
+  foodDish("main", "Chili con Carne mit Reis", "Chili con carne con arroz", "", { kind: "meat", leg: true, carb: "reis" }),
+  foodDish("main", "Rinderroulade mit Kartoffelbrei", "Rollitos de ternera con puré de patata", "G", { kind: "meat", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Hähnchenkeule mit Kartoffelecken", "Muslo de pollo con gajos de patata", "", { kind: "meat", leg: false, carb: "kart_frisch" }),
+  foodDish("main", "Frikassee mit Vollkornreis", "Fricasé con arroz integral", "G", { kind: "meat", leg: false, carb: "vollreis" }),
+  foodDish("main", "Kartoffelauflauf mit Hack", "Pastel de patata con carne picada", "C, G", { kind: "meat", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Hackbraten mit Kartoffelpüree", "Pastel de carne con puré de patata", "A, C, G", { kind: "meat", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Hähnchen-Wrap", "Wrap de pollo", "A, G", { kind: "meat", leg: false, carb: "brot" }),
+  foodDish("main", "Pizza mit Hähnchen", "Pizza de pollo", "A, G", { kind: "meat", leg: false, carb: "brot" }),
+  foodDish("main", "Fischstäbchen mit Kartoffelpüree", "Palitos de pescado con puré de patata", "A, D, G", { kind: "fish", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Fischfrikadellen mit Kartoffelecken", "Hamburguesas de pescado con gajos de patata", "A, C, D", { kind: "fish", leg: false, carb: "kart_frisch" }),
+  foodDish("main", "Lachs mit Vollkornreis", "Salmón con arroz integral", "D", { kind: "fish", leg: false, carb: "vollreis" }),
+  foodDish("main", "Fischnudeln mit Vollkornnudeln", "Pasta integral con pescado", "A, D", { kind: "fish", leg: false, carb: "vollnudeln" }),
+  foodDish("main", "Thunfisch-Nudeln", "Pasta con atún", "A, D, G", { kind: "fish", leg: false, carb: "nudeln" }),
+  foodDish("main", "Fischstäbchen mit Reis", "Palitos de pescado con arroz", "A, D", { kind: "fish", leg: false, carb: "reis" }),
+  foodDish("main", "Seelachs mit Kartoffelpüree", "Abadejo con puré de patata", "D, G", { kind: "fish", leg: false, carb: "kart_sobre" }),
+  foodDish("main", "Fischfilet mit Vollkornreis", "Filete de pescado con arroz integral", "D", { kind: "fish", leg: false, carb: "vollreis" }),
+  foodDish("main", "Fischburger mit Vollkornbrötchen", "Hamburguesa de pescado en pan integral", "A, C, D", { kind: "fish", leg: false, carb: "vollbrot" }),
+  foodDish("main", "Thunfisch-Reis-Pfanne", "Salteado de atún con arroz", "D", { kind: "fish", leg: false, carb: "reis" }),
+  foodDish("main", "Fischpizza", "Pizza de pescado", "A, D, G", { kind: "fish", leg: false, carb: "brot" }),
+  foodDish("main", "Lachsnudeln mit Sahnesoße", "Pasta con salmón y salsa de nata", "A, D, G", { kind: "fish", leg: false, carb: "nudeln" }),
+  foodDish("main", "Kabeljau mit Kartoffelecken", "Bacalao con gajos de patata", "D", { kind: "fish", leg: false, carb: "kart_frisch" })
+];
 
-// Postres para el examen (con fruta fresca y sin fruta fresca)
-const FOOD_DESSERT_CATALOG = [...FOOD_FRUIT_POOL, ...FOOD_DESSERT_POOL];
+// Comidas vegetarianas sin guarnición: solo se usan para crear el fallo de R8a
+const FOOD_MAINS_SIN_GUARNICION = [
+  foodDish("main", "Gemüsesuppe mit Kräutern", "Sopa de verduras con hierbas", "", { kind: "veg", leg: false, carb: null }),
+  foodDish("main", "Käse-Gemüse-Auflauf", "Gratinado de verduras y queso", "C, G", { kind: "veg", leg: false, carb: null }),
+  foodDish("main", "Gemüseomelett", "Tortilla de verduras", "C, G", { kind: "veg", leg: false, carb: null }),
+  foodDish("main", "Quark-Gemüse-Bällchen", "Bolitas de quark con verduras", "C, G", { kind: "veg", leg: false, carb: null })
+];
 
-// Sin cereal ni patata (fallo R8a)
-const FOOD_CARB_NONE = { id: "none", de: "—", es: "sin cereal ni patata", fresh: false, vollkorn: false };
+const FOOD_DESSERTS = [
+  foodDish("dessert", "Obst", "Fruta", "", { fruit: true }),
+  foodDish("dessert", "Apfelspalten", "Gajos de manzana", "", { fruit: true }),
+  foodDish("dessert", "Birnen", "Peras", "", { fruit: true }),
+  foodDish("dessert", "Bananen", "Plátanos", "", { fruit: true }),
+  foodDish("dessert", "Weintrauben", "Uvas", "", { fruit: true }),
+  foodDish("dessert", "Orangen", "Naranjas", "", { fruit: true }),
+  foodDish("dessert", "Erdbeeren", "Fresas", "", { fruit: true }),
+  foodDish("dessert", "Kiwi", "Kiwi", "", { fruit: true }),
+  foodDish("dessert", "Melone", "Melón", "", { fruit: true }),
+  foodDish("dessert", "Mandarinen", "Mandarinas", "", { fruit: true }),
+  foodDish("dessert", "Pfirsichstücke", "Melocotón en trozos", "", { fruit: true }),
+  foodDish("dessert", "Himbeeren", "Frambuesas", "", { fruit: true }),
+  foodDish("dessert", "Heidelbeeren", "Arándanos", "", { fruit: true }),
+  foodDish("dessert", "Ananasstücke", "Piña en trozos", "", { fruit: true }),
+  foodDish("dessert", "Apfelkuchen", "Tarta de manzana", "A, C, G", { fruit: false }),
+  foodDish("dessert", "Obstkompott aus der Dose", "Compota de fruta de bote", "", { fruit: false }),
+  foodDish("dessert", "Vanillepudding", "Natillas de vainilla", "G", { fruit: false }),
+  foodDish("dessert", "Milchreis mit Zimt", "Arroz con leche y canela", "G", { fruit: false }),
+  foodDish("dessert", "Joghurt mit Honig", "Yogur con miel", "G", { fruit: false }),
+  foodDish("dessert", "Quarkspeise", "Postre de quark", "C, G", { fruit: false }),
+  foodDish("dessert", "Butterkekse", "Galletas de mantequilla", "A, C, G", { fruit: false }),
+  foodDish("dessert", "Schokopudding", "Pudin de chocolate", "G", { fruit: false }),
+  foodDish("dessert", "Grießbrei mit Zimt", "Sémola con canela", "G", { fruit: false }),
+  foodDish("dessert", "Apfelmus", "Compota de manzana", "", { fruit: false }),
+  foodDish("dessert", "Vollkornkekse", "Galletas integrales", "A, C, G", { fruit: false }),
+  foodDish("dessert", "Schokomousse", "Mousse de chocolate", "C, G", { fruit: false }),
+  foodDish("dessert", "Quarkbällchen", "Bolitas de quark", "C, G", { fruit: false }),
+  foodDish("dessert", "Karottenkuchen", "Tarta de zanahoria", "A, C, G, H", { fruit: false }),
+  foodDish("dessert", "Zitronenjoghurt", "Yogur de limón", "G", { fruit: false }),
+  foodDish("dessert", "Pfannkuchen mit Zucker", "Tortitas con azúcar", "A, C, G", { fruit: false })
+];
 
-// ----- Platos: mezcla de principal, guarnición y verdura -----
+// Catálogo de sustitución del examen (por casilla)
+const FOOD_CATALOG = { starter: FOOD_STARTERS, main: FOOD_MAINS, dessert: FOOD_DESSERTS };
 
-// Generador determinista: el catálogo es el mismo en cada carga
-function seededRandom(seed) {
-  let a = seed >>> 0;
-  return function () {
-    a = (a + 0x6D2B79F5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-// Nombre de un plato según los componentes que tenga (cualquiera puede faltar)
-function plateName(main, carb, raw) {
-  const sides = [carb, raw].filter(x => x && x.id !== "none");
-  if (main && sides.length) {
-    return {
-      de: `${main.de} mit ${sides.map(s => s.de).join(" und ")}`,
-      es: `${main.es} con ${sides.map(s => s.es).join(" y ")}`
-    };
-  }
-  if (main) return { de: main.de, es: main.es };
-  return { de: sides.map(s => s.de).join(" und "), es: sides.map(s => s.es).join(" y ") };
-}
-
-function makePlate(main, carb, raw) {
-  const name = plateName(main, carb, raw);
-  return {
-    slot: "plato",
-    de: name.de,
-    es: name.es,
-    main: main ? { ...main } : null,
-    carb: carb && carb.id !== "none" ? { ...carb } : null,
-    raw: raw ? { ...raw } : null
-  };
-}
-
-// Catálogo de platos completos o parciales (~1000), generado a partir de los componentes
-function buildPlateCatalog() {
-  const rnd = seededRandom(20261105);
-  const pick = list => list[Math.floor(rnd() * list.length)];
-  const veggies = FOOD_RAW_BASE_POOL.concat(FOOD_COOKED_POOL);
-  const out = [];
-  [...FOOD_MAIN_POOL.veg, ...FOOD_MAIN_POOL.meat, ...FOOD_MAIN_POOL.fish].forEach(main => {
-    out.push(makePlate(main, pick(FOOD_CARB_BASE_POOL), pick(veggies)));   // principal, guarnición y verdura
-    out.push(makePlate(main, pick(FOOD_CARB_BASE_POOL), null));            // principal y guarnición
-    out.push(makePlate(main, null, pick(FOOD_RAW_BASE_POOL)));             // principal y verdura
-  });
-  for (let i = 0; i < 120; i++) {
-    out.push(makePlate(null, pick(FOOD_CARB_BASE_POOL), pick(veggies)));   // guarnición y verdura, sin principal
-  }
-  return dedupeDishes(out);
-}
-
-const FOOD_PLATE_CATALOG = buildPlateCatalog();
-// ----- Funciones auxiliares -----
-
+// ----- Auxiliares -----
 function randomPick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function pickFrom(pool) {
-  return { ...randomPick(pool) };
+function pickFrom(list) {
+  return { ...randomPick(list) };
 }
 
-// Índice aleatorio de los días que cumplen el predicado, o -1
-function pickIndex(plan, pred) {
+function pickDish(list, pred) {
+  const c = list.filter(pred);
+  return c.length ? { ...randomPick(c) } : null;
+}
+
+// Índice aleatorio de un día del menú que cumple pred (o -1)
+function pickDay(plan, pred) {
   const idx = [];
   plan.forEach((d, i) => { if (pred(d)) idx.push(i); });
   return idx.length ? randomPick(idx) : -1;
 }
 
-// Plato principal de un tipo ("veg", "meat" o "fish"); leg filtra por legumbres si se indica
-function pickMain(kind, leg) {
-  const list = leg === undefined ? FOOD_MAIN_POOL[kind] : FOOD_MAIN_POOL[kind].filter(x => x.leg === leg);
-  return { ...randomPick(list) };
+function carbIsFresh(c) {
+  return c === "kart_frisch";
 }
 
-// Guarnición de una familia concreta (kart_frisch, kart_sobre, reis, nudeln, vollnudeln, brot, vollbrot, vollreis)
-function carbOfType(type) {
-  return pickFrom(FOOD_CARB_POOL.filter(c => c.type === type));
+function carbIsVollkorn(c) {
+  return c === "vollnudeln" || c === "vollbrot" || c === "vollreis";
 }
+
+// Versión blanca y versión integral de cada guarnición de cereal
+const FOOD_WHITE_OF = { vollnudeln: "nudeln", vollbrot: "brot", vollreis: "reis" };
+const FOOD_VOLL_OF = { nudeln: "vollnudeln", brot: "vollbrot", reis: "vollreis" };
 
 function ruleById(id) {
   return FOOD_RULES.find(r => r.id === id);
 }
 
-// Devuelve los ids en el orden de FOOD_RULES
+// Ids de reglas en el orden de FOOD_RULES
 function sortRules(ids) {
   return FOOD_RULES.map(r => r.id).filter(id => ids.includes(id));
 }
@@ -618,180 +410,204 @@ function clonePlan(plan) {
   return JSON.parse(JSON.stringify(plan));
 }
 
-// Comprueba el plan y devuelve las reglas que incumple (ids de FOOD_RULES).
-// Un plato sin principal cuenta como vegetariano. Un plato puede no llevar guarnición o verdura:
-// si un día no tiene cereal ni patata, incumple R8a.
+// ----- Reglas: se comprueban sobre el menú completo (5 días) -----
+// Devuelve las reglas que incumple el menú (ids de FOOD_RULES).
 function checkPlan(plan) {
   const broken = [];
   const count = pred => plan.filter(pred).length;
-  if (count(d => !d.main || d.main.kind === "veg") < 3) broken.push("R1");
-  if (count(d => d.main && (d.main.kind === "meat" || d.main.kind === "fish")) !== 1) broken.push("R2");
+  if (count(d => d.main.kind === "veg") < 3) broken.push("R1");
+  if (count(d => d.main.kind !== "veg") !== 1) broken.push("R2");
   const fruit = count(d => d.dessert.fruit);
   if (fruit < 2 || fruit > 3) broken.push("R5");
-  const raw = count(d => d.raw && d.raw.raw);
+  const raw = count(d => d.starter.raw);
   if (raw < 2 || raw > 3) broken.push("R6");
-  if (!plan.some(d => d.main && d.main.leg)) broken.push("R7");
-  if (plan.some(d => !d.carb || d.carb.id === "none")) broken.push("R8a");
-  if (count(d => d.carb && d.carb.fresh) < 2) broken.push("R8b");
-  if (!plan.some(d => d.carb && d.carb.vollkorn)) broken.push("R8c");
+  if (!plan.some(d => d.main.leg)) broken.push("R7");
+  if (plan.some(d => !d.main.carb)) broken.push("R8a");
+  if (count(d => carbIsFresh(d.main.carb)) < 2) broken.push("R8b");
+  if (!plan.some(d => carbIsVollkorn(d.main.carb))) broken.push("R8c");
   return sortRules(broken);
 }
+
 // ----- Catálogo de fallos -----
-// Cada fallo cambia exactamente UN día de la semana (una celda) y rompe sus reglas (rules).
-// apply(p) crea el fallo sobre la copia p (o devuelve null si no es posible en ese plan).
+// Cada fallo cambia exactamente UNA casilla (un plato) y rompe sus reglas (rules).
+// apply(p) crea el fallo sobre la copia p (o devuelve null si no es posible).
 // fix(p) lo corrige; solo se usa para comprobar el generador.
-const FOOD_ERRORS = [
+const FOOD_FAULTS = [
   {
-    id: "F1", rules: ["R2"],
+    id: "R2a", rules: ["R2"],
+    // Un plato vegetariano pasa a carne o pescado: hay dos
     apply(p) {
-      // Se cambia un plato vegetariano por carne, sin tocar el único plato con legumbres (para no romper R7)
-      const legs = p.filter(d => d.main.leg).length;
-      const i = pickIndex(p, d => d.main.kind === "veg" && !(d.main.leg && legs === 1));
+      const i = pickDay(p, d => d.main.kind === "veg");
       if (i < 0) return null;
-      p[i].main = pickMain("meat");
+      const carb = p[i].main.carb;
+      const dish = pickDish(FOOD_MAINS, m => m.kind !== "veg" && m.carb === carb) || pickDish(FOOD_MAINS, m => m.kind !== "veg");
+      if (!dish) return null;
+      p[i].main = dish;
       return p;
     },
     fix(p) {
-      const i = pickIndex(p, d => d.main.kind === "meat");
-      const needLeg = !p.some(d => d.main.leg);
-      p[i].main = pickMain("veg", needLeg ? true : undefined);
+      const i = pickDay(p, d => d.main.kind !== "veg");
+      const carb = p[i].main.carb;
+      p[i].main = pickDish(FOOD_MAINS, m => m.kind === "veg" && !m.leg && m.carb === carb) || pickDish(FOOD_MAINS, m => m.kind === "veg" && !m.leg);
       return p;
     }
   },
   {
-    id: "F2", rules: ["R2"],
-    // Ningún plato de carne o pescado: el único pasa a vegetariano
+    id: "R2b", rules: ["R2"],
+    // El único plato de carne o pescado pasa a vegetariano: no hay ninguno
     apply(p) {
-      const i = pickIndex(p, d => d.main.kind === "fish" || d.main.kind === "meat");
+      const i = pickDay(p, d => d.main.kind !== "veg");
       if (i < 0) return null;
-      p[i].main = pickMain("veg");
+      const carb = p[i].main.carb;
+      const dish = pickDish(FOOD_MAINS, m => m.kind === "veg" && !m.leg && m.carb === carb) || pickDish(FOOD_MAINS, m => m.kind === "veg" && !m.leg);
+      if (!dish) return null;
+      p[i].main = dish;
       return p;
     },
     fix(p) {
-      let i = pickIndex(p, d => d.main.kind === "veg" && !d.main.leg);
-      if (i < 0) i = pickIndex(p, d => d.main.kind === "veg");
-      p[i].main = pickMain("fish");
+      const i = pickDay(p, d => d.main.kind === "veg" && !d.main.leg);
+      const carb = p[i].main.carb;
+      p[i].main = pickDish(FOOD_MAINS, m => m.kind !== "veg" && m.carb === carb) || pickDish(FOOD_MAINS, m => m.kind !== "veg");
       return p;
     }
   },
   {
-    id: "F4", rules: ["R5"],
-    // Solo 2 días con fruta: se quita uno
+    id: "R5a", rules: ["R5"],
+    // Solo 2 días con fruta fresca: uno pasa a postre sin fruta
     apply(p) {
       if (p.filter(d => d.dessert.fruit).length !== 2) return null;
-      const i = pickIndex(p, d => d.dessert.fruit);
-      p[i].dessert = pickFrom(FOOD_DESSERT_POOL);
+      const i = pickDay(p, d => d.dessert.fruit);
+      const dish = pickDish(FOOD_DESSERTS, x => !x.fruit);
+      if (!dish) return null;
+      p[i].dessert = dish;
       return p;
     },
     fix(p) {
-      const i = pickIndex(p, d => !d.dessert.fruit);
-      p[i].dessert = pickFrom(FOOD_FRUIT_POOL);
+      const i = pickDay(p, d => !d.dessert.fruit);
+      p[i].dessert = pickDish(FOOD_DESSERTS, x => x.fruit);
       return p;
     }
   },
   {
-    id: "F6", rules: ["R5"],
-    // 3 días con fruta: se añade un cuarto
+    id: "R5b", rules: ["R5"],
+    // 3 días con fruta fresca: un cuarto día con fruta
     apply(p) {
       if (p.filter(d => d.dessert.fruit).length !== 3) return null;
-      const i = pickIndex(p, d => !d.dessert.fruit);
-      p[i].dessert = pickFrom(FOOD_FRUIT_POOL);
+      const i = pickDay(p, d => !d.dessert.fruit);
+      const dish = pickDish(FOOD_DESSERTS, x => x.fruit);
+      if (!dish) return null;
+      p[i].dessert = dish;
       return p;
     },
     fix(p) {
-      const i = pickIndex(p, d => d.dessert.fruit);
-      p[i].dessert = pickFrom(FOOD_DESSERT_POOL);
+      const i = pickDay(p, d => d.dessert.fruit);
+      p[i].dessert = pickDish(FOOD_DESSERTS, x => !x.fruit);
       return p;
     }
   },
   {
-    id: "F7", rules: ["R6"],
-    // Solo 2 días con verdura cruda: se cambia uno por verdura cocida
+    id: "R6a", rules: ["R6"],
+    // Solo 2 días con verdura cruda: uno pasa a verdura cocida
     apply(p) {
-      if (p.filter(d => d.raw.raw).length !== 2) return null;
-      const i = pickIndex(p, d => d.raw.raw);
-      p[i].raw = pickFrom(FOOD_COOKED_POOL);
+      if (p.filter(d => d.starter.raw).length !== 2) return null;
+      const i = pickDay(p, d => d.starter.raw);
+      const dish = pickDish(FOOD_STARTERS, x => !x.raw);
+      if (!dish) return null;
+      p[i].starter = dish;
       return p;
     },
     fix(p) {
-      const i = pickIndex(p, d => !d.raw.raw);
-      p[i].raw = pickFrom(FOOD_RAW_POOL);
+      const i = pickDay(p, d => !d.starter.raw);
+      p[i].starter = pickDish(FOOD_STARTERS, x => x.raw);
       return p;
     }
   },
   {
-    id: "F9", rules: ["R6"],
-    // 3 días con verdura cruda: se añade un cuarto
+    id: "R6b", rules: ["R6"],
+    // 3 días con verdura cruda: un cuarto día con verdura cruda
     apply(p) {
-      if (p.filter(d => d.raw.raw).length !== 3) return null;
-      const i = pickIndex(p, d => !d.raw.raw);
-      p[i].raw = pickFrom(FOOD_RAW_POOL);
+      if (p.filter(d => d.starter.raw).length !== 3) return null;
+      const i = pickDay(p, d => !d.starter.raw);
+      const dish = pickDish(FOOD_STARTERS, x => x.raw);
+      if (!dish) return null;
+      p[i].starter = dish;
       return p;
     },
     fix(p) {
-      const i = pickIndex(p, d => d.raw.raw);
-      p[i].raw = pickFrom(FOOD_COOKED_POOL);
+      const i = pickDay(p, d => d.starter.raw);
+      p[i].starter = pickDish(FOOD_STARTERS, x => !x.raw);
       return p;
     }
   },
   {
-    id: "F10", rules: ["R7"],
-    // Solo un plato con legumbres: se cambia por un vegetariano sin legumbres
+    id: "R7", rules: ["R7"],
+    // Solo un plato con legumbres: pasa a un vegetariano sin legumbres
     apply(p) {
       if (p.filter(d => d.main.leg).length !== 1) return null;
-      const i = pickIndex(p, d => d.main.leg);
-      p[i].main = pickMain("veg", false);
+      const i = pickDay(p, d => d.main.leg);
+      const carb = p[i].main.carb;
+      const dish = pickDish(FOOD_MAINS, m => m.kind === "veg" && !m.leg && m.carb === carb) || pickDish(FOOD_MAINS, m => m.kind === "veg" && !m.leg);
+      if (!dish) return null;
+      p[i].main = dish;
       return p;
     },
     fix(p) {
-      const i = pickIndex(p, d => d.main.kind === "veg" && !d.main.leg);
-      p[i].main = pickMain("veg", true);
+      const i = pickDay(p, d => d.main.kind === "veg" && !d.main.leg);
+      const carb = p[i].main.carb;
+      p[i].main = pickDish(FOOD_MAINS, m => m.kind === "veg" && m.leg && m.carb === carb) || pickDish(FOOD_MAINS, m => m.kind === "veg" && m.leg);
       return p;
     }
   },
   {
-    id: "F11", rules: ["R8b"],
-    // Solo 2 días con patata fresca: uno pasa a patata de sobre
+    id: "R8a", rules: ["R8a"],
+    // Un día sin cereal ni patata: el plato vegetariano pasa a uno sin guarnición
     apply(p) {
-      if (p.filter(d => d.carb.fresh).length !== 2) return null;
-      const i = pickIndex(p, d => d.carb.fresh);
-      p[i].carb = carbOfType("kart_sobre");
-      return p;
-    },
-    fix(p) {
-      const i = pickIndex(p, d => !d.carb.fresh && !d.carb.vollkorn && d.carb.id !== "none");
-      p[i].carb = carbOfType("kart_frisch");
-      return p;
-    }
-  },
-  {
-    id: "F13", rules: ["R8a"],
-    // Un día sin cereal ni patata
-    apply(p) {
-      const i = pickIndex(p, d => !d.carb.fresh && !d.carb.vollkorn);
+      const i = pickDay(p, d => d.main.kind === "veg" && !carbIsFresh(d.main.carb) && !carbIsVollkorn(d.main.carb));
       if (i < 0) return null;
-      p[i].carb = { ...FOOD_CARB_NONE };
+      p[i].main = pickFrom(FOOD_MAINS_SIN_GUARNICION);
       return p;
     },
     fix(p) {
-      const i = pickIndex(p, d => d.carb.id === "none");
-      p[i].carb = carbOfType("reis");
+      const i = pickDay(p, d => !d.main.carb);
+      p[i].main = pickDish(FOOD_MAINS, m => m.kind === "veg" && !m.leg && m.carb === "reis") || pickDish(FOOD_MAINS, m => m.kind === "veg");
       return p;
     }
   },
   {
-    id: "F14", rules: ["R8c"],
-    // Solo un día con cereal integral: se cambia por la versión blanca
+    id: "R8b", rules: ["R8b"],
+    // Solo 2 días con patata fresca: uno pasa a patata de sobre (mismo tipo de plato)
     apply(p) {
-      if (p.filter(d => d.carb.vollkorn).length !== 1) return null;
-      const toWhite = { vollnudeln: "nudeln", vollbrot: "brot", vollreis: "reis" };
-      const i = pickIndex(p, d => d.carb.vollkorn);
-      p[i].carb = carbOfType(toWhite[p[i].carb.type]);
+      if (p.filter(d => carbIsFresh(d.main.carb)).length !== 2) return null;
+      const i = pickDay(p, d => carbIsFresh(d.main.carb));
+      const cur = p[i].main;
+      const dish = pickDish(FOOD_MAINS, m => m.kind === cur.kind && m.leg === cur.leg && !carbIsFresh(m.carb) && !carbIsVollkorn(m.carb));
+      if (!dish) return null;
+      p[i].main = dish;
       return p;
     },
     fix(p) {
-      const i = pickIndex(p, d => !d.carb.fresh && !d.carb.vollkorn && d.carb.id !== "none");
-      p[i].carb = carbOfType("vollbrot");
+      const i = pickDay(p, d => d.main.carb === "kart_sobre");
+      const cur = p[i].main;
+      p[i].main = pickDish(FOOD_MAINS, m => m.kind === cur.kind && m.leg === cur.leg && carbIsFresh(m.carb)) || cur;
+      return p;
+    }
+  },
+  {
+    id: "R8c", rules: ["R8c"],
+    // Solo un día con cereal integral: pasa a la versión blanca
+    apply(p) {
+      if (p.filter(d => carbIsVollkorn(d.main.carb)).length !== 1) return null;
+      const i = pickDay(p, d => carbIsVollkorn(d.main.carb));
+      const cur = p[i].main;
+      const dish = pickDish(FOOD_MAINS, m => m.kind === cur.kind && m.leg === cur.leg && m.carb === FOOD_WHITE_OF[cur.carb]);
+      if (!dish) return null;
+      p[i].main = dish;
+      return p;
+    },
+    fix(p) {
+      const i = pickDay(p, d => FOOD_VOLL_OF[d.main.carb] !== undefined);
+      const cur = p[i].main;
+      p[i].main = pickDish(FOOD_MAINS, m => m.kind === cur.kind && m.leg === cur.leg && m.carb === FOOD_VOLL_OF[cur.carb]) || cur;
       return p;
     }
   }
