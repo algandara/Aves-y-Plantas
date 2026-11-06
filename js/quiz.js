@@ -189,15 +189,29 @@ function updateTopBar() {
   document.getElementById("progressBar").style.width = `${pct}%`;
 }
 
+// Lado menor mínimo (px) de la foto original para que la especie se aprecie con detalle
+const MIN_SHARP_SIDE = 1000;
+// Si hay menos fotos nítidas que esto, se completa con fotos más pequeñas
+const MIN_SHARP_COUNT = 8;
+
 function extractValidPhotos(obsResults, sciName) {
-  const urls = [];
+  const sharp = [];
+  const small = [];
   for (const obs of obsResults) {
+    if (obs.captive) continue;
     if (obs.taxon && obs.taxon.name.toLowerCase().startsWith(sciName.toLowerCase()) && obs.photos) {
       for (const p of obs.photos.slice(0, 2)) {
-        if (p.url) urls.push(p.url.replace("square", "medium"));
+        if (!p.url) continue;
+        const d = p.original_dimensions;
+        if (d && Math.min(d.width, d.height) < MIN_SHARP_SIDE) {
+          small.push(p.url.replace("square", "medium"));
+        } else {
+          sharp.push(p.url.replace("square", "large"));
+        }
       }
     }
   }
+  const urls = sharp.length >= MIN_SHARP_COUNT ? sharp : [...sharp, ...small];
   return [...new Set(urls)];
 }
 
@@ -213,20 +227,26 @@ async function fetchPhotosForSpecies(speciesObj) {
   if (speciesObj.type === "plant") {
     if (!speciesObj.onlyLeaves) {
       const months = speciesObj.winterFruit ? "1,2,3,9,10,11,12" : "6,7,8,9,10";
-      const fruitRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&term_id=12&term_value_id=14&month=${months}&per_page=40&order_by=votes`);
+      const fruitRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&captive=false&photos=true&term_id=12&term_value_id=14&month=${months}&per_page=40&order_by=votes`);
       const fruitData = await fruitRes.json();
       urls = extractValidPhotos(fruitData.results, sciName);
     }
     if (urls.length < 15) {
       const fallbackMonths = speciesObj.winterFruit ? "11,12,1,2" : "7,8,9";
-      const leavesRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&month=${fallbackMonths}&per_page=40&order_by=votes`);
+      const leavesRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&captive=false&photos=true&month=${fallbackMonths}&per_page=40&order_by=votes`);
       const leavesData = await leavesRes.json();
       urls = [...new Set([...urls, ...extractValidPhotos(leavesData.results, sciName)])];
     }
   } else {
-    const birdRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&photos=true&per_page=40&order_by=votes`);
-    const birdData = await birdRes.json();
-    urls = extractValidPhotos(birdData.results, sciName);
+    // Aves: primero solo adultas (sin polluelos, huevos ni nidos); si hay pocas, se amplía a todas
+    const adultRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&captive=false&photos=true&term_id=1&term_value_id=2&per_page=40&order_by=votes`);
+    const adultData = await adultRes.json();
+    urls = extractValidPhotos(adultData.results, sciName);
+    if (urls.length < MIN_SHARP_COUNT) {
+      const birdRes = await fetch(`https://api.inaturalist.org/v1/observations?taxon_id=${exactTaxon.id}&quality_grade=research&captive=false&photos=true&per_page=40&order_by=votes`);
+      const birdData = await birdRes.json();
+      urls = [...new Set([...urls, ...extractValidPhotos(birdData.results, sciName)])];
+    }
   }
   taxonCache[sciName] = urls;
   return shuffleArray(urls);
